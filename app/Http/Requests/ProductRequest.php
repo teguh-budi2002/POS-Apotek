@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class ProductRequest extends BaseFormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $rules = [
+            'category_product_id' => 'required|exists:category_products,id',
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'description' => 'required',
+            'img_product' => 'required|file'
+        ];
+
+        if (in_array($this->method(), ['PUT', 'PATCH'])) {
+            $rules['category_product_id'] = 'nullable|exists:category_products,id';
+            $rules['name'] = 'nullable|string|max:255';
+            $rules['price'] = 'nullable|numeric|min:0';
+            $rules['description'] = 'nullable|string';
+            $rules['img_product'] = 'nullable|file';
+        }
+
+        return $rules;
+    }
+
+    public function messages()
+    {
+        return [
+            'category_product_id.required' => 'Category wajib dipilih.',
+            'name.required' => 'Nama wajib diisi.',
+            'price' => [
+                'required' => 'Harga wajib diisi.',
+                'numeric' => 'Harga harus berupa angka.'
+            ],
+            'description.required' => 'Deskripsi wajib diisi.',
+            'img_product.required' => 'Produk harus memiliki foto.',
+        ];
+    }
+}
