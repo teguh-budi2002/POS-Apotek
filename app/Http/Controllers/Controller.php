@@ -36,7 +36,7 @@ abstract class Controller
             'datas' => $data
         ];
 
-        return response()->json($wrap)->withHeaders([
+        return response()->json($wrap, $status)->withHeaders([
             'Content-Type' => 'application/json'
         ]);
     }

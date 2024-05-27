@@ -36,7 +36,11 @@ class ProductApiController extends Controller
 
     public function getProducts() {
         $products = Product::get();
-        return $this->responseJson($products, 200, "Berhasil Mengambil Daftar Produk");
+        if ($products->isNotEmpty()) {
+            return $this->responseJson($products, 200, "Berhasil Mengambil Daftar Produk");
+        }
+
+        return $this->responseJson(404, "Tidak Ada Daftar Produk");
     }
 
     public function editProduct(ProductRequest $request, Product $product) {

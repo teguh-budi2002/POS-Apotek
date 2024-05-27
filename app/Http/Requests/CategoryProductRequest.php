@@ -22,7 +22,7 @@ class CategoryProductRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:category_products,name',
+            'name' => "required|unique:category_products,name,{$this->id}",
             'isActive' => 'boolean',
         ];
     }
@@ -34,7 +34,7 @@ class CategoryProductRequest extends BaseFormRequest
                 'required' => 'Nama wajib diisi.',
                 'unique' => 'Nama kategori sudah terdaftar.'
             ],
-            'boolean' => 'Status berupa boolean.'
+            'isActive.boolean' => 'Status berupa boolean.'
         ];
     }
 }
