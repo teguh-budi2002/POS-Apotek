@@ -23,6 +23,7 @@ class ProductRequest extends BaseFormRequest
     {
         $rules = [
             'category_product_id' => 'required|exists:category_products,id',
+            'unit_product_id' => 'required|exists:unit_products,id',
             'name' => 'required',
             'price' => 'required|numeric',
             'description' => 'required',
@@ -31,6 +32,7 @@ class ProductRequest extends BaseFormRequest
 
         if (in_array($this->method(), ['PUT', 'PATCH'])) {
             $rules['category_product_id'] = 'nullable|exists:category_products,id';
+            $rules['unit_product_id'] = 'nullable|exists:unit_product_id,id';
             $rules['name'] = 'nullable|string|max:255';
             $rules['price'] = 'nullable|numeric|min:0';
             $rules['description'] = 'nullable|string';
@@ -43,7 +45,8 @@ class ProductRequest extends BaseFormRequest
     public function messages()
     {
         return [
-            'category_product_id.required' => 'Category wajib dipilih.',
+            'category_product_id.required' => 'Kategori wajib dipilih.',
+            'unit_product_id.required' => 'Unit Produk wajib dipilih.',
             'name.required' => 'Nama wajib diisi.',
             'price' => [
                 'required' => 'Harga wajib diisi.',
