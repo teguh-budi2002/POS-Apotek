@@ -22,6 +22,8 @@ return new class extends Migration
             $table->text('description');
             $table->text('additional_description')->nullable();
             $table->string('img_product', 80);
+            $table->enum('status_publish', ['Pending', 'Published'])->defaultValue('Pending');
+            $table->boolean('isActive')->default(1);
             $table->timestamps();
         });
     }
