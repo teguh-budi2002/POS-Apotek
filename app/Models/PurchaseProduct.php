@@ -31,4 +31,16 @@ class PurchaseProduct extends Model
         'order_note',
         'proof_of_payment',
     ];
+
+    public function apotek() {
+        return $this->belongsTo(Apotek::class);
+    }
+
+    public function supplier() {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    public function purchasedProducts() {
+        return $this->belongsToMany(Product::class);
+    }
 }

@@ -5,16 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UnitProduct extends Model
+class OrderedPurchaseProduct extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'isActive'
+        'product_id',
+        'purchase_prodcut_id'
     ];
-
-    public function products() {
-        return $this->hasMany(Product::class);
-    }
 }

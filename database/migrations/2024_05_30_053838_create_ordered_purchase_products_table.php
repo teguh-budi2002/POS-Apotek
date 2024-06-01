@@ -11,19 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('ordered_purchase_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_product_id')
+            $table->foreignId('product_id')->constrained();
+            $table->foreignId('purchase_product_id')
                   ->constrained()
                   ->onUpdate('cascade')
                   ->onDelete('cascade');
-            $table->string('name');
-            $table->integer('price');
-            $table->text('description');
-            $table->text('additional_description')->nullable();
-            $table->string('img_product', 80);
-            $table->enum('status_publish', ['Pending', 'Published'])->defaultValue('Pending');
-            $table->boolean('isActive')->default(1);
             $table->timestamps();
         });
     }
@@ -33,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('ordered_purchase_products');
     }
 };
