@@ -24,14 +24,14 @@ class PurchaseProductRequest extends BaseFormRequest
         return [
             'apotek_id' => 'required',
             'supplier_id' => 'required',
-            'invoice' => 'required|unique:purchase_products,invoice',
+            'invoice' => 'unique:purchase_products,invoice',
             'grand_total' => 'required|numeric',
             'sub_total' => 'required|numeric',
             'selling_price' => 'required',
-            'profit_margin' => 'required|double|numeric',
-            'discount' => 'nullable|double|numeric',
+            'profit_margin' => 'required|numeric',
+            'discount' => 'nullable|numeric',
             'payment_method' => 'required',
-            'status_order' => 'required',
+            // 'status_order' => 'required',
             'status_payment' => 'required',
             'qty' => 'required|numeric',
             'order_date' => 'required|date',
@@ -50,7 +50,6 @@ class PurchaseProductRequest extends BaseFormRequest
             'apotek_id.required' => 'Tentukan lokasi apotek.',
             'supplier_id.required' => 'Tentukan supplier produk.',
             'invoice' => [
-                'required' => 'Invoice tidak boleh kosong.',
                 'unique' => 'Invoice harus bersfiat unique.'
             ],
             'grand_total' => [
@@ -68,8 +67,8 @@ class PurchaseProductRequest extends BaseFormRequest
             ],
             'discount.numeric' => 'Diskon harus berupa angka.',
             'payment_method.required' => 'Metode pembayaran tidak boleh kosong.',
-            'status_order.required' => 'Metode pembayaran tidak boleh kosong.',
-            'status_payment.required' => 'Metode pembayaran tidak boleh kosong.',
+            // 'status_order.required' => 'Status order tidak boleh kosong.',
+            'status_payment.required' => 'Status pembayaran tidak boleh kosong.',
             'qty' => [
                 'required' => 'Quantity wajib diisi.',
                 'numeric' => 'Quantity harus berupa angka.'

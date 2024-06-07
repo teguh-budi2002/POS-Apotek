@@ -2,8 +2,13 @@
 
 namespace App\Models;
 
+use App\PaymentMethod;
+use App\StatusOrder;
+use App\StatusPayment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class PurchaseProduct extends Model
 {
@@ -12,7 +17,6 @@ class PurchaseProduct extends Model
     protected $fillable = [
         'apotek_id',
         'supplier_id',
-        'product_id',
         'invoice',
         'grand_total',
         'sub_total',
@@ -32,6 +36,15 @@ class PurchaseProduct extends Model
         'proof_of_payment',
     ];
 
+    protected function casts()
+    {
+        return [
+            'status_order' => StatusOrder::class,
+            'status_payment' => StatusPayment::class,
+            'payment_method' => PaymentMethod::class
+        ];
+    }
+
     public function apotek() {
         return $this->belongsTo(Apotek::class);
     }
@@ -41,6 +54,16 @@ class PurchaseProduct extends Model
     }
 
     public function purchasedProducts() {
-        return $this->belongsToMany(Product::class);
+        return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id');
+    }
+
+    public function setInvoiceAttribute($value) {
+        do {
+            $time = Carbon::now()->format('YmdHis');
+            $randString = strtoupper(Str::random(8));
+            $invoice = "INV-{$randString}.{$time}";
+        } while (PurchaseProduct::where('invoice', $invoice)->exists());
+
+        return $this->attributes['invoice'] = $invoice;
     }
 }

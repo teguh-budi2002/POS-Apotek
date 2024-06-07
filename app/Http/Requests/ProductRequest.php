@@ -27,7 +27,7 @@ class ProductRequest extends BaseFormRequest
             'name' => 'required',
             'price' => 'required|numeric',
             'description' => 'required',
-            'img_product' => 'required|file'
+            'img_product' => 'required|file|max:2048|mimes:png,jpg,webp'
         ];
 
         if (in_array($this->method(), ['PUT', 'PATCH'])) {
@@ -36,7 +36,7 @@ class ProductRequest extends BaseFormRequest
             $rules['name'] = 'nullable|string|max:255';
             $rules['price'] = 'nullable|numeric|min:0';
             $rules['description'] = 'nullable|string';
-            $rules['img_product'] = 'nullable|file';
+            $rules['img_product'] = 'nullable|file|max:2048|mimes:png,jpg,webp';
         }
 
         return $rules;
@@ -53,7 +53,12 @@ class ProductRequest extends BaseFormRequest
                 'numeric' => 'Harga harus berupa angka.'
             ],
             'description.required' => 'Deskripsi wajib diisi.',
-            'img_product.required' => 'Produk harus memiliki foto.',
+            'img_product' => [
+                "required" => 'Produk harus memiliki foto.',
+                'file' => 'Berkas yang di upload harus berupa file gambar.',
+                'uploaded' => 'Maksimal ukuran gambar adalah 2Mb.',
+                'mimes' => 'Ekstensi yang di izinkan (jpg,png,webp).'
+            ],
         ];
     }
 }

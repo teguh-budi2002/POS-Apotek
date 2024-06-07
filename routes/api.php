@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\LoginApiController;
 use App\Http\Controllers\Api\Auth\RegisterApiController;
 use App\Http\Controllers\Api\CategoryProductApiController;
 use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\PurchaseApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\UnitProductApiController;
 use Illuminate\Http\Request;
@@ -46,4 +47,9 @@ Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
   Route::post('add-unit', [UnitProductApiController::class, 'createUnit']);
   Route::patch('edit-unit/{id}', [UnitProductApiController::class, 'editUnit']);
   Route::delete('delete-unit/{id}', [UnitProductApiController::class, 'deleteUnit']);
+});
+
+Route::prefix('ordered-product')->middleware('auth:sanctum')->group(function() {
+  Route::post('purchase-product', [PurchaseApiController::class, 'purchasedProduct']);
+  Route::get('get-all-purchased-product', [PurchaseApiController::class, 'getAllPurchasedProduct']);
 });
