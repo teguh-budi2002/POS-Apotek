@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderedPurchaseProduct extends Model
+class Customer extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'product_id',
-        'purchase_prodcut_id',
-        'qty'
+        'name',
+        'contact_phone',
+        'gender',
+        'address'
     ];
 }

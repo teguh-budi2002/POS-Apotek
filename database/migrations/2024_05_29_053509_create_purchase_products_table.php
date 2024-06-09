@@ -24,7 +24,6 @@ return new class extends Migration
             $table->enum('payment_method', ["Bank Transfer", "Credit", "Cash"]);
             $table->enum("status_order", ["Pending", "Shipping", "Delivered", "Cancelled"]);
             $table->enum("status_payment", ["Paid", "Due", "Late"])->comment('Paid=dibayar, Due=tempo, Late=terlambat');
-            $table->integer('qty');
             $table->date('order_date');
             // $table->date('expired_date');
             $table->date('paid_on')->nullable();

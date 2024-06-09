@@ -32,7 +32,7 @@ class UnitProductApiController extends Controller
         return $this->responseJson(404, "Tidak Ada Daftar Satuan Produk");
     }
 
-    public function editUnit(unitProductRequest $request, $unitId) {
+    public function editUnit(UnitProductRequest $request, $unitId) {
         DB::beginTransaction();
         try {
             $validation = $request->validated();

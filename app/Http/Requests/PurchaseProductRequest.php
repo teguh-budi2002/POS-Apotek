@@ -33,7 +33,6 @@ class PurchaseProductRequest extends BaseFormRequest
             'payment_method' => 'required',
             // 'status_order' => 'required',
             'status_payment' => 'required',
-            'qty' => 'required|numeric',
             'order_date' => 'required|date',
             'paid_on' => 'nullable|date',
             'tax_amount' => 'nullable|numeric',
@@ -69,10 +68,6 @@ class PurchaseProductRequest extends BaseFormRequest
             'payment_method.required' => 'Metode pembayaran tidak boleh kosong.',
             // 'status_order.required' => 'Status order tidak boleh kosong.',
             'status_payment.required' => 'Status pembayaran tidak boleh kosong.',
-            'qty' => [
-                'required' => 'Quantity wajib diisi.',
-                'numeric' => 'Quantity harus berupa angka.'
-            ],
             'order_date.required' => 'Tentukan tanggal order.',
             'tax_amount.numeric' => 'Pajak harus berupa angka.',
             'shipping_fee.numeric' => 'Pajak pengiriman harus berupa angka.',

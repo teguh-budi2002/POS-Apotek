@@ -4,11 +4,11 @@ use App\Http\Controllers\Api\ApotekApiController;
 use App\Http\Controllers\Api\Auth\LoginApiController;
 use App\Http\Controllers\Api\Auth\RegisterApiController;
 use App\Http\Controllers\Api\CategoryProductApiController;
+use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\PurchaseApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\UnitProductApiController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('register/process',[RegisterApiController::class, 'registerProcess']);
@@ -26,6 +26,13 @@ Route::prefix('supplier')->middleware('auth:sanctum')->group(function() {
   Route::post('add-supplier',[SupplierApiController::class, 'addSupplier']);
   Route::patch('edit-supplier/{id}',[SupplierApiController::class, 'editSupplier']);
   Route::delete('delete-supplier/{id}',[SupplierApiController::class, 'deleteSupplier']);
+});
+
+Route::prefix('customer')->middleware('auth:sanctum')->group(function() {
+  Route::get('/', [CustomerApiController::class, 'getAllCustomer']);
+  Route::post('add-customer',[CustomerApiController::class, 'addCustomer']);
+  Route::patch('edit-customer/{id}',[CustomerApiController::class, 'editCustomer']);
+  Route::delete('delete-customer/{id}',[CustomerApiController::class, 'deleteCustomer']);
 });
 
 Route::prefix('product')->middleware('auth:sanctum')->group(function() {
