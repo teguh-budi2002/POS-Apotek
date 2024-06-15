@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryProductApiController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\PurchaseApiController;
+use App\Http\Controllers\Api\SalesApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\UnitProductApiController;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,11 @@ Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
 });
 
 Route::prefix('ordered-product')->middleware('auth:sanctum')->group(function() {
+  // Ordered Purchased Product into Supplier
   Route::post('purchase-product', [PurchaseApiController::class, 'purchasedProduct']);
   Route::get('get-all-purchased-product', [PurchaseApiController::class, 'getAllPurchasedProduct']);
+
+  // Ordered Sales Product Into Customer
+  Route::post('sales-product', [SalesApiController::class, 'salesProduct']);
+  Route::get('get-all-sales-product', [SalesApiController::class, 'getAllSalesProduct']);
 });

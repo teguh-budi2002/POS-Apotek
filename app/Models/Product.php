@@ -33,4 +33,11 @@ class Product extends Model
                     ->withPivot('qty')
                     ->withTimestamps();
     }
+
+    public function salesProducts() {
+        return $this->belongsToMany(PurchaseProduct::class, 'ordered_sales_products', 'product_id', 'sales_product_id')
+                    ->as('saled_product')
+                    ->withPivot('qty')
+                    ->withTimestamps();
+    }
 }

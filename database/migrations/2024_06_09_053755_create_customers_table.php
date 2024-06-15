@@ -21,7 +21,7 @@ return new class extends Migration
         });
 
         Schema::table('sales_products', function(Blueprint $table) {
-            $table->foreignId('customer_id')->constrained();
+            $table->foreignId('customer_id')->after('apotek_id')->constrained();
         });
     }
 

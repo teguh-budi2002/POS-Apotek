@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PurchaseProductRequest extends BaseFormRequest
+class SalesProductRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,11 +19,11 @@ class PurchaseProductRequest extends BaseFormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+     public function rules(): array
     {
         return [
             'apotek_id' => 'required',
-            'supplier_id' => 'required',
+            'customer_id' => 'required',
             'invoice' => 'unique:purchase_products,invoice',
             'grand_total' => 'required|numeric',
             'sub_total' => 'required|numeric',
@@ -46,7 +46,7 @@ class PurchaseProductRequest extends BaseFormRequest
     {
         return [
             'apotek_id.required' => 'Tentukan lokasi apotek.',
-            'supplier_id.required' => 'Tentukan supplier produk.',
+            'customer.required' => 'Tentukan pelanggan pembeli produk.',
             'invoice' => [
                 'unique' => 'Invoice harus bersfiat unique.'
             ],

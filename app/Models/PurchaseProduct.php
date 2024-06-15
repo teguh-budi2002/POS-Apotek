@@ -26,7 +26,6 @@ class PurchaseProduct extends Model
         'payment_method',
         'status_order',
         'status_payment',
-        'qty',
         'order_date',
         'paid_on',
         'tax_amount',
@@ -55,7 +54,7 @@ class PurchaseProduct extends Model
 
     public function purchasedProducts() {
         return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id')
-                    ->as('purchased_product')
+                    ->as('product')
                     ->withPivot('qty')
                     ->withTimestamps();
     }
