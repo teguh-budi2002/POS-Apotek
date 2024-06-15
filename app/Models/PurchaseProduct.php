@@ -54,7 +54,10 @@ class PurchaseProduct extends Model
     }
 
     public function purchasedProducts() {
-        return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id');
+        return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id')
+                    ->as('purchased_product')
+                    ->withPivot('qty')
+                    ->withTimestamps();
     }
 
     public function setInvoiceAttribute($value) {

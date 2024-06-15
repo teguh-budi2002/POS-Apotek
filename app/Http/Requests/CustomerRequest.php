@@ -21,12 +21,21 @@ class CustomerRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => 'required',
-            'contact_phone' => 'required|numeric|max:14',
+            'contact_phone' => 'required|numeric|regex:/^62[0-9]+$/|max_digits:14',
             'gender' => 'required',
             'address' => 'required'
         ];
+
+        if(in_array($this->method(), ['PUT', 'PATCH'])) {
+            $rules['name'] = 'nullable';
+            $rules['contact_phone'] = 'nullable|numeric|regex:/^62[0-9]+$/|max_digits:14';
+            $rules['gender'] = 'nullable';
+            $rules['address'] = 'nullable';
+        }
+
+        return $rules;
     }
 
     public function messages()
@@ -36,7 +45,8 @@ class CustomerRequest extends BaseFormRequest
             'contact_phone' => [
                 'required' => 'Kontak HP pelanggan wajib diisi.',
                 'numeric' => 'Kontak HP harus berupa angka.',
-                'max' => 'Nomer HP maksimal 14 angka.'
+                "regex" => "Kontak HP harus berawalan 62.",
+                "max_digits" => "Kontak HP maksimal 14 angka."
             ],
             'gender.required' => 'Jenis kelamin wajib dipilih.',
             'address.required' => 'Alamat pelanggan wajib diisi.'

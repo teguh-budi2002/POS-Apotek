@@ -20,11 +20,14 @@ class PurchaseApiController extends Controller
             $validation['payment_method'] = $request->payment_method;
             $validation['status_payment'] = $request->status_payment;
             $order = PurchaseProduct::create($validation);
+            
+            $combineProductAndQty = [];
+            foreach ($request->product_id as $key => $productId) {
+                $combineProductAndQty[$productId] = ['qty' => $request->qty[$key]];
+            }
+            $order->purchasedProducts()->attach($combineProductAndQty);
+
             DB::commit();
-
-            $products = Product::find($request->product_id);
-            $order->purchasedProducts()->attach($products);
-
             return $this->responseJson(201, "Pembelian produk kepada supplier berhasil");
         } catch (\Throwable $th) {
             DB::rollBack();
