@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SalesProductRequest;
 use App\Models\SalesProduct;
+use App\Models\StockProduct;
 use App\StatusOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,15 @@ class SalesApiController extends Controller
             $validation['payment_method'] = $request->payment_method;
             $validation['status_payment'] = $request->status_payment;
             $order = SalesProduct::create($validation);
+
+            // Handle stock < request qty put on FrontEnd
+            $existingStockByOrderedProduct = StockProduct::select("id", "stock")
+                                                         ->whereIn('product_id', $request->product_id)
+                                                         ->get();
+            foreach ($existingStockByOrderedProduct as $key => $currentStock) {
+                $currentStock->stock -= $request->qty[$key];
+                $currentStock->save();
+            }
 
             $combineProductAndQty = [];
             foreach ($request->product_id as $key => $productId) {
