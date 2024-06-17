@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\PurchaseApiController;
 use App\Http\Controllers\Api\SalesApiController;
+use App\Http\Controllers\Api\StockApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\UnitProductApiController;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,13 @@ Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
   Route::post('add-unit', [UnitProductApiController::class, 'createUnit']);
   Route::patch('edit-unit/{id}', [UnitProductApiController::class, 'editUnit']);
   Route::delete('delete-unit/{id}', [UnitProductApiController::class, 'deleteUnit']);
+});
+
+Route::prefix('stock')->middleware('auth:sanctum')->group(function() {
+  Route::get('/', [StockApiController::class, 'getAllStock']);
+  Route::post('add-stock', [StockApiController::class, 'addStock']);
+  Route::patch('edit-stock/{id}', [StockApiController::class, 'editStock']);
+  Route::delete('delete-stock/{id}', [StockApiController::class, 'deleteStock']);
 });
 
 Route::prefix('ordered-product')->middleware('auth:sanctum')->group(function() {

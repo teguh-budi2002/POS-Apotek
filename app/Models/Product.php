@@ -27,6 +27,10 @@ class Product extends Model
         return $this->belongsTo(UnitProduct::class);
     }
 
+    public function stock() {
+        return $this->hasOne(StockProduct::class);
+    }
+
     public function orderedProducts() {
         return $this->belongsToMany(PurchaseProduct::class, 'ordered_purchase_products', 'product_id', 'purchase_product_id')
                     ->as('product_ordered')

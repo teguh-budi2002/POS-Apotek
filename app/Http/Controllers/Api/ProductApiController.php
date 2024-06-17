@@ -78,6 +78,7 @@ class ProductApiController extends Controller
     
             return $this->responseJson(200, "Product Berhasil Dihapus");
         } catch (\Throwable $th) {
+            DB::rollBack();
             return $this->responseJson(500, $th->getMessage());
         }
     }
