@@ -24,6 +24,7 @@ class ProductRequest extends BaseFormRequest
         $rules = [
             'category_product_id' => 'required|exists:category_products,id',
             'unit_product_id' => 'required|exists:unit_products,id',
+            'product_code' => 'required|unique:products,product_code,' . $this->id,
             'name' => 'required',
             'price' => 'required|numeric',
             'description' => 'required',
@@ -47,6 +48,10 @@ class ProductRequest extends BaseFormRequest
         return [
             'category_product_id.required' => 'Kategori wajib dipilih.',
             'unit_product_id.required' => 'Unit Produk wajib dipilih.',
+            'product_code' => [
+                'required' => 'Cantumkan kode produk.',
+                'unique' => 'Kode produk sudah terdaftar.'
+            ],
             'name.required' => 'Nama wajib diisi.',
             'price' => [
                 'required' => 'Harga wajib diisi.',

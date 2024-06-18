@@ -28,11 +28,12 @@ class SalesProduct extends Model
         'status_payment',
         'order_date',
         'paid_on',
-        'tax_amount',
-        'shipping_fee',
+        'tax',
+        'shipping_cost',
         'shipping_details',
         'order_note',
         'proof_of_payment',
+        'action_by'
     ];
 
     protected function casts()

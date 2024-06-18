@@ -16,6 +16,12 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained();
             $table->foreignId('purchase_product_id')->constrained();
             $table->integer('qty');
+            $table->integer('price_after_discount')->nullable();
+            $table->integer('selling_price');
+            $table->double('profit_margin');
+            $table->integer('discount')->nullable();
+            $table->integer('tax')->nullable();
+            $table->date('expired_date_product');
             $table->timestamps();
         });
     }

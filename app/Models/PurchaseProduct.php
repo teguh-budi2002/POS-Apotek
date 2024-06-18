@@ -17,7 +17,7 @@ class PurchaseProduct extends Model
     protected $fillable = [
         'apotek_id',
         'supplier_id',
-        'invoice',
+        'reference_number',
         'grand_total',
         'sub_total',
         'selling_price',
@@ -28,11 +28,12 @@ class PurchaseProduct extends Model
         'status_payment',
         'order_date',
         'paid_on',
-        'tax_amount',
-        'shipping_fee',
+        'tax',
+        'shipping_cost',
         'shipping_details',
         'order_note',
         'proof_of_payment',
+        'action_by',
     ];
 
     protected function casts()
@@ -59,13 +60,13 @@ class PurchaseProduct extends Model
                     ->withTimestamps();
     }
 
-    public function setInvoiceAttribute($value) {
+    public function setReferenceNumberAttribute($value) {
         do {
-            $time = Carbon::now()->format('YmdHis');
+            $time = Carbon::now()->format('Y');
             $randString = strtoupper(Str::random(8));
-            $invoice = "INV-{$randString}.{$time}";
-        } while (PurchaseProduct::where('invoice', $invoice)->exists());
+            $reference_number = "REF-{$randString}.{$time}";
+        } while (PurchaseProduct::where('reference_number', $reference_number)->exists());
 
-        return $this->attributes['invoice'] = $invoice;
+        return $this->attributes['reference_number'] = $reference_number;
     }
 }

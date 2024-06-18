@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('category_product_id')
                   ->constrained()
                   ->onUpdate('cascade');
+            $table->string('product_code');
             $table->string('name');
             $table->integer('price');
             $table->text('description');
