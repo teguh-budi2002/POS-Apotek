@@ -27,22 +27,26 @@ class PurchaseProductRequest extends BaseFormRequest
             'reference_number' => 'unique:purchase_products,reference_number',
             'grand_total' => 'required|numeric',
             'sub_total' => 'required|numeric',
-            'qty' => 'required|numeric',
+            'qty' => 'required|array',
+            'qty.*' => 'numeric',
             'price_after_discount' => 'nullable|numeric',
-            'selling_price' => 'required',
-            'profit_margin' => 'required|numeric',
-            'discount' => 'nullable|numeric',
-            'expired_date' => 'required|date',
+            'unit_price' => 'required',
+            'profit_margin' => 'required|array',
+            'profit_margin.*' => 'numeric',
+            'discount' => 'nullable|array',
+            'discount.*' => 'numeric',
+            'expired_date' => 'required|array',
+            'expired_date.*' => 'date',
             'payment_method' => 'required',
             'status_payment' => 'required',
             'order_date' => 'required|date',
             'paid_on' => 'nullable|date',
-            'tax' => 'nullable|numeric',
+            'tax' => 'nullable|array',
+            'tax.*' => 'numeric',
             'shipping_cost' => 'nullable|numeric',
             'shipping_details' => 'nullable|string',
             'order_notes' => 'nullable|string',
             'proof_of_payment' => 'nullable|file|max:2048|mimes:png,jpg,webp',
-            'action_by' => 'required|string'
         ];
     }
 
@@ -62,27 +66,21 @@ class PurchaseProductRequest extends BaseFormRequest
                 'required' => 'Sub Total tidak boleh kosong.',
                 'numeric' => 'Sub Total harus berupa angka.'
             ],
-            'qty' => [
-                'required' => 'Cantumkan quantity pada produk.',
-                'numeric' => 'Quantity harus berupa angka.'
-            ],
+            'qty.required' => 'Cantumkan quantity pada produk.',
+            'qty.*.numeric' => 'Quantity harus berupa angka.',
             'price_after_discount' => [
                 'numeric' => 'Harga setelah diskon harus berupa angka.'
             ],
-            'selling_price.required' => 'Harga jual tidak boleh kosong.',
-            'profit_margin' => [
-                'required' => 'Profit margin tidak boleh kosong.',
-                'numeric' => 'Profit margin harus berupa angka.'
-            ],
-            'discount.numeric' => 'Diskon harus berupa angka.',
-            'expired_date' => [
-                'required' => 'Cantumkan masa kadaluarsa pada produk.',
-                'date' => 'Format tanggal tidak valid.'
-            ],
+            'unit_price.required' => 'Harga jual per unit tidak boleh kosong.',
+            'profit_margin.required' => 'Profit margin tidak boleh kosong.',
+            'profit_margin.*.numeric' => 'Profit margin harus berupa angka.',
+            'discount.*.numeric' => 'Diskon harus berupa angka.',
+            'expired_date.required' => 'Cantumkan masa kadaluarsa pada produk.',
+            'expired_date.*.date' => 'Format tanggal tidak valid.',
             'payment_method.required' => 'Metode pembayaran tidak boleh kosong.',
             'status_payment.required' => 'Status pembayaran tidak boleh kosong.',
             'order_date.required' => 'Tentukan tanggal order.',
-            'tax.numeric' => 'Pajak harus berupa angka.',
+            'tax.*.numeric' => 'Pajak harus berupa angka.',
             'shipping_cost.numeric' => 'Pajak pengiriman harus berupa angka.',
             'proof_of_payment' => [
                 'file' => 'Bukti pembayaran harus berupa file gambar.',

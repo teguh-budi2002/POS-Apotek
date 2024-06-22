@@ -24,9 +24,9 @@ class ProductRequest extends BaseFormRequest
         $rules = [
             'category_product_id' => 'required|exists:category_products,id',
             'unit_product_id' => 'required|exists:unit_products,id',
-            'product_code' => 'required|unique:products,product_code,' . $this->id,
+            'product_code' => 'required|unique:products,product_code',
             'name' => 'required',
-            'price' => 'required|numeric',
+            'unit_price' => 'required|numeric',
             'description' => 'required',
             'img_product' => 'required|file|max:2048|mimes:png,jpg,webp'
         ];
@@ -34,8 +34,9 @@ class ProductRequest extends BaseFormRequest
         if (in_array($this->method(), ['PUT', 'PATCH'])) {
             $rules['category_product_id'] = 'nullable|exists:category_products,id';
             $rules['unit_product_id'] = 'nullable|exists:unit_product_id,id';
+            $rules['product_code'] = 'nullable|unique:products,product_code,' . $this->id;
             $rules['name'] = 'nullable|string|max:255';
-            $rules['price'] = 'nullable|numeric|min:0';
+            $rules['unit_price'] = 'nullable|numeric|min:0';
             $rules['description'] = 'nullable|string';
             $rules['img_product'] = 'nullable|file|max:2048|mimes:png,jpg,webp';
         }
@@ -53,7 +54,7 @@ class ProductRequest extends BaseFormRequest
                 'unique' => 'Kode produk sudah terdaftar.'
             ],
             'name.required' => 'Nama wajib diisi.',
-            'price' => [
+            'unit_price' => [
                 'required' => 'Harga wajib diisi.',
                 'numeric' => 'Harga harus berupa angka.'
             ],

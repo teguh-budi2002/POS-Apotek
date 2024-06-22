@@ -23,7 +23,6 @@ return new class extends Migration
             $table->enum("status_payment", ["Paid", "Due", "Late"])->comment('Paid=dibayar, Due=tempo, Late=terlambat');
             $table->date('order_date');
             $table->date('paid_on')->nullable();
-            $table->integer('total_payment')->nullable();
             $table->integer('shipping_cost')->nullable();
             $table->text('shipping_details')->nullable();
             $table->text('order_note')->nullable();

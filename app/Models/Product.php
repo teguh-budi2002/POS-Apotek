@@ -35,7 +35,7 @@ class Product extends Model
     public function orderedProducts() {
         return $this->belongsToMany(PurchaseProduct::class, 'ordered_purchase_products', 'product_id', 'purchase_product_id')
                     ->as('product_ordered')
-                    ->withPivot('qty')
+                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'expired_date_product')
                     ->withTimestamps();
     }
 

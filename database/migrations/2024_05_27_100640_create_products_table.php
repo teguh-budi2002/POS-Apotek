@@ -18,7 +18,7 @@ return new class extends Migration
                   ->onUpdate('cascade');
             $table->string('product_code');
             $table->string('name');
-            $table->integer('price');
+            $table->integer('unit_price');
             $table->text('description');
             $table->text('additional_description')->nullable();
             $table->string('img_product', 80);

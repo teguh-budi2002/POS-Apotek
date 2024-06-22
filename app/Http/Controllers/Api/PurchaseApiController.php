@@ -9,6 +9,7 @@ use App\Models\PurchaseProduct;
 use App\Models\StockProduct;
 use App\StatusOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseApiController extends Controller
@@ -17,17 +18,36 @@ class PurchaseApiController extends Controller
         DB::beginTransaction();
         try {
             $validation = $request->validated();
-            $validation['status_order'] = StatusOrder::Pending;
-            $validation['payment_method'] = $request->payment_method;
-            $validation['status_payment'] = $request->status_payment;
-            $order = PurchaseProduct::create($validation);
 
-            // Sum stock & qty while order product
+            $subTotal = array_sum($request->qty) * array_sum($request->unit_price);
+            $grandTotal = 0;
+
+            if ($request->hasAny(['discount', 'tax'])) {
+                $grandTotal = $this->countGrandTotalValue($subTotal, $request->discount, $request->tax);
+            }
+
+            $createOrder = PurchaseProduct::create([
+                'apotek_id' => $request->apotek_id,
+                'supplier_id' => $request->supplier_id,
+                'reference_number' => $request->reference_number,
+                'sub_total' => $subTotal,
+                'grand_total' => $grandTotal,
+                'status_order' => StatusOrder::Pending,
+                'payment_method' => $request->payment_method,
+                'status_payment' => $request->status_payment,
+                'order_date' => $request->order_date,
+                'shipping_cost' => $request->shipping_cost,
+                'shipping_details' => $request->shipping_details,
+                'order_note' => $request->order_note,
+                'action_by' => Auth::user()->name
+            ]);
+
             $existingStockByOrderedProduct = StockProduct::whereIn('product_id', $request->product_id)
                                                           ->pluck('product_id')
                                                           ->toArray();
             $missingProduct = array_diff($request->product_id, $existingStockByOrderedProduct);
 
+            // Check Product if doesn't have default stock
             if (!empty($missingProduct)) {
                 $productMissingName = Product::whereIn('id', $missingProduct)->pluck('name')->toArray();
                 $productMissingNameStr = implode(", ", $productMissingName);
@@ -46,11 +66,25 @@ class PurchaseApiController extends Controller
                 }
             }
 
-            $combineProductAndQty = [];
+            $combineProductReq = [];
             foreach ($request->product_id as $key => $productId) {
-                $combineProductAndQty[$productId] = ['qty' => $request->qty[$key]];
+                $unitPrice = $request->unit_price[$key];
+                $discountPercentage = isset($request->discount[$key]) ? $request->discount[$key] : 0;
+    
+                $priceAfterDiscount = $discountPercentage !== 0 ? $unitPrice - ($unitPrice * $discountPercentage / 100) : 0;
+
+                $combineProductReq[$productId] = [
+                    'qty' => $request->qty[$key],
+                    'discount' => $discountPercentage,
+                    'tax' => isset($request->tax[$key]) ? $request->tax[$key] : null,
+                    'selling_price' => $unitPrice,
+                    'price_after_discount' => $priceAfterDiscount,
+                    'profit_margin' => $request->profit_margin[$key],
+                    'expired_date_product' => $request->expired_date[$key]
+                ];
             }
-            $order->purchasedProducts()->attach($combineProductAndQty);
+            // dd($combineProductReq);
+            $createOrder->purchasedProducts()->attach($combineProductReq);
 
             DB::commit();
             return $this->responseJson(201, "Pembelian produk kepada supplier berhasil");
@@ -67,5 +101,24 @@ class PurchaseApiController extends Controller
         }
 
         return $this->responseJson(404, "Tidak Ada Daftar Order Produk");
+    }
+
+    protected function countGrandTotalValue($subTotal, $discount, $tax) {
+        $countTax = 0;
+        $countDisc = 0;
+
+        if (!empty($discount) && !empty($tax)) {
+            // Count Tax with Discount
+            $countDisc = $subTotal * (array_sum($discount) / 100);
+            $countTax = ($subTotal - $countDisc) * (array_sum($tax) / 100);
+        } elseif (empty($discount) && !empty($tax)) {
+            // Count Tax Without Discount
+            $countTax = $subTotal * (array_sum($tax) / 100);
+        } elseif (!empty($discount) && empty($tax)) {
+            // Only Count DIscount
+            $countDisc = $subTotal * (array_sum($discount) / 100);
+        }
+
+        return ($subTotal - $countDisc) + $countTax;
     }
 }
