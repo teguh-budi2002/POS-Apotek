@@ -47,6 +47,8 @@ class PurchaseProductRequest extends BaseFormRequest
             'shipping_details' => 'nullable|string',
             'order_notes' => 'nullable|string',
             'proof_of_payment' => 'nullable|file|max:2048|mimes:png,jpg,webp',
+            'termin_payment' => 'nullable|numeric',
+            'payment_invoice' => 'required|file|max:2048|mimes:docx,png,jpg'
         ];
     }
 
@@ -86,6 +88,12 @@ class PurchaseProductRequest extends BaseFormRequest
                 'file' => 'Bukti pembayaran harus berupa file gambar.',
                 'uploaded' => 'Maksimal ukuran gambar adalah 2Mb.',
                 'mimes' => 'Ekstensi yang di izinkan (jpg,png,webp).'
+            ],
+            'termin_payment.numeric' => 'Format termin harus berupa angka.',
+            'payment_invoice' => [
+                'required' => 'Faktur pembelian wajib di upload.',
+                'uploaded' => 'Maksimum ukuran berkas sebesar 2mb',
+                'mimes' => 'Ekstensi file yang di-izinkan docx,jpg,png'
             ]
         ];
     }

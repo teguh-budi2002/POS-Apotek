@@ -11,6 +11,7 @@ use App\StatusOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseApiController extends Controller
 {
@@ -21,9 +22,16 @@ class PurchaseApiController extends Controller
 
             $subTotal = array_sum($request->qty) * array_sum($request->unit_price);
             $grandTotal = 0;
+            $paymentInvoice = "";
 
             if ($request->hasAny(['discount', 'tax'])) {
                 $grandTotal = $this->countGrandTotalValue($subTotal, $request->discount, $request->tax);
+            }
+
+            if ($request->file('payment_invoice')) {
+                $file  = $request->file('payment_invoice');
+                $paymentInvoice = $file->getClientOriginalName();
+                $storeImage = Storage::putFileAs('/public/purchase-product/payment-invoice', $file, $paymentInvoice);
             }
 
             $createOrder = PurchaseProduct::create([
@@ -39,7 +47,10 @@ class PurchaseApiController extends Controller
                 'shipping_cost' => $request->shipping_cost,
                 'shipping_details' => $request->shipping_details,
                 'order_note' => $request->order_note,
-                'action_by' => Auth::user()->name
+                'action_by' => Auth::user()->name,
+                'termin_payment' => $request->termin_payment,
+                'format_termin_date' => $request->format_termin_date,
+                'payment_invoice' => $paymentInvoice
             ]);
 
             $existingStockByOrderedProduct = StockProduct::whereIn('product_id', $request->product_id)

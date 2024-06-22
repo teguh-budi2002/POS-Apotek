@@ -21,12 +21,15 @@ return new class extends Migration
             $table->enum('payment_method', ["Bank Transfer", "Credit", "Cash"]);
             $table->enum("status_order", ["Pending", "Shipping", "Delivered", "Cancelled"]);
             $table->enum("status_payment", ["Paid", "Due", "Late"])->comment('Paid=dibayar, Due=tempo, Late=terlambat');
-            $table->date('order_date');
+            $table->dateTime('order_date');
             $table->date('paid_on')->nullable();
             $table->integer('shipping_cost')->nullable();
             $table->text('shipping_details')->nullable();
             $table->text('order_note')->nullable();
             $table->string('proof_of_payment')->nullable();
+            $table->integer('termin_payment')->comment("masa berakhir pembayaran")->nullable();
+            $table->enum('format_termin_date', ['Day', 'Month'])->nullable();
+            $table->string('payment_invoice')->comment('invoice dari pihak supplier');
             $table->string('action_by')->comment('Nama admin yang melakukan aksi.');
             $table->timestamps();
         });
