@@ -11,10 +11,17 @@ use App\Http\Controllers\Api\SalesApiController;
 use App\Http\Controllers\Api\StockApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\UnitProductApiController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::post('register/process',[RegisterApiController::class, 'registerProcess']);
 Route::post('login/process',[LoginApiController::class, 'loginProcess']);
+
+Route::get('auth-check', function() {
+  $is_auth = Auth::check();
+
+  return json_encode(["is_auth" => $is_auth]);
+});
 
 Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ApotekApiController::class, 'getAllApotek']);

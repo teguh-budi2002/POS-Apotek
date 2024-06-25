@@ -17,10 +17,10 @@ class LoginApiController extends Controller
                 return $this->responseJson(401, "Pengguna Tidak Ditemukan");
             }
 
-            $user = User::where('email', $request->email)->first();
+            $user = User::select("id", "name", "email")->where('email', $request->email)->first();
             $token = $user->createToken("auth_token", ["*"], now()->addDay());
 
-            return $this->responseJson(['token' => $token->plainTextToken], 200, 'Login Berhasil');
+            return $this->responseJson(['token' => $token->plainTextToken, 'userData' => $user], 200, 'Login Berhasil');
         } catch (\Throwable $th) {
             return $this->responseJson(500, $th->getMessage());
         }
