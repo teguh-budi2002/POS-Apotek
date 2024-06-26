@@ -29,6 +29,9 @@ router.beforeEach((to, from, next) => {
 
         next({ name: "login" });
         return;
+    } else if (authStore.isLoggedin && to.path === "/login") {
+        next({ name: "dashboard" });
+        return;
     }
 
     next();

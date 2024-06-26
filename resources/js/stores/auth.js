@@ -1,20 +1,17 @@
 import { defineStore } from "pinia";
 import apiServices from "../services/api";
-import { useRouter } from "vue-router";
 import Cookies from "js-cookie";
 import { configToken } from "../config/token";
-import { ref } from "vue";
 
 export const useAuthStore = defineStore("authStore", {
     state: () => ({
         userData: null,
         isError: false,
         submitProcess: false,
-        token: Cookies.get("token") || false,
-        isAuth: false,
+        token: Cookies.get("token") ? true : false,
     }),
     getters: {
-        isLoggedin: (state) => state.isAuth,
+        isLoggedin: (state) => state.token,
     },
     actions: {
         async Login(email, password) {
@@ -36,8 +33,7 @@ export const useAuthStore = defineStore("authStore", {
                         expires: configToken.expired_day,
                     });
 
-                    const router = useRouter();
-                    router.push({
+                    this.router.push({
                         name: "dashboard",
                     });
                 }
@@ -49,13 +45,6 @@ export const useAuthStore = defineStore("authStore", {
                     this.isError = true;
                 }
             }
-        },
-
-        async getAuthInfo() {
-            await apiServices.get("auth-check").then((res) => {
-                const checkAuth = res.data.is_auth;
-                this.isAuth = checkAuth;
-            });
         },
     },
 });
