@@ -27,6 +27,7 @@ export const useAuthStore = defineStore("authStore", {
 
                     Cookies.set("token", response.data.datas.token, {
                         expires: configToken.expired_day,
+                        secure: true,
                     });
 
                     Cookies.set("user", response.data.datas.userData, {
