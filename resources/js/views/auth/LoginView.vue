@@ -42,7 +42,7 @@
                             >
                                 Login Dashboard
                             </p>
-                            <form @submit="onSubmitLogin">
+                            <form @submit.prevent="onSubmitLogin">
                                 <input
                                     class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 placeholder-gray-500 text-sm focus:bg-white"
                                     :class="{
@@ -73,7 +73,6 @@
                                 </p>
                                 <button
                                     :disabled="authStore.submitProcess"
-                                    type="submit"
                                     class="mt-5 disabled:bg-blue-200 disabled:cursor-wait tracking-wide font-semibold bg-blue-400 text-white w-full py-4 rounded-lg hover:bg-blue-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
                                 >
                                     <span>Masuk</span>
@@ -97,25 +96,17 @@
 <script>
 import { useAuthStore } from "../../stores/auth";
 import { useToast } from "primevue/usetoast";
-import Toast from "primevue/toast";
-import Button from "primevue/button";
-import Dialog from "primevue/dialog";
 import { useForm } from "vee-validate";
 import * as Yup from "yup";
-import { useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import { ref } from "vue";
 
 export default {
-    components: {
-        Toast,
-        Button,
-        Dialog,
-    },
     setup() {
         let visible = ref(false);
         const toast = useToast();
         const authStore = useAuthStore();
-        const router = useRoute();
+        const router = useRouter();
 
         if (localStorage.getItem("checkAuth") === "userNotAuthenticated") {
             visible.value = true;
@@ -141,6 +132,7 @@ export default {
         const onSubmitLogin = handleSubmit(async (values) => {
             const { email, password } = values;
             await authStore.Login(email, password);
+
             if (authStore.isError) {
                 toast.add({
                     severity: "error",
@@ -148,6 +140,8 @@ export default {
                     detail: "Pengguna Tidak Ditemukan",
                     life: 3000,
                 });
+            } else {
+                router.replace({ name: "dashboard" });
             }
         });
 
@@ -158,7 +152,6 @@ export default {
             passwordAttr,
             onSubmitLogin,
             handleSubmit,
-            Toast,
             errors,
             authStore,
             visible,

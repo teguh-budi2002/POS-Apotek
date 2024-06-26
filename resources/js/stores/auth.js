@@ -8,10 +8,10 @@ export const useAuthStore = defineStore("authStore", {
         userData: null,
         isError: false,
         submitProcess: false,
-        token: Cookies.get("token") ? true : false,
+        isAuth: Cookies.get("token") ? true : false,
     }),
     getters: {
-        isLoggedin: (state) => state.token,
+        isLoggedin: (state) => state.isAuth,
     },
     actions: {
         async Login(email, password) {
@@ -32,14 +32,11 @@ export const useAuthStore = defineStore("authStore", {
                     Cookies.set("user", response.data.datas.userData, {
                         expires: configToken.expired_day,
                     });
-
-                    this.router.push({
-                        name: "dashboard",
-                    });
+                    this.isAuth = true;
                 }
             } catch (error) {
                 const errorData = error?.response?.data;
-
+                console.log("hello error", error);
                 if (errorData?.status_code === 401) {
                     this.submitProcess = false;
                     this.isError = true;
