@@ -44,20 +44,7 @@
                         <div
                             class="nav-item text-slate-600 flex items-center space-x-3"
                         >
-                            <div>
-                                <Button
-                                    type="button"
-                                    label="Logout"
-                                    severity="danger"
-                                    icon="fas fa-arrow-right"
-                                    iconPos="right"
-                                    outlined
-                                    text
-                                    raised
-                                    size="small"
-                                    class="btn-logout"
-                                />
-                            </div>
+                            <ButtonLogout />
                         </div>
                     </div>
                 </div>
@@ -70,10 +57,11 @@
 
 <script>
 import Sidebar from "../components/Layout/Sidebar.vue";
+import ButtonLogout from "../components/ButtonLogout.vue";
 import { ref } from "vue";
 
 export default {
-    components: { Sidebar },
+    components: { Sidebar, ButtonLogout },
     setup() {
         const isSidebarExpanded = ref(false);
 

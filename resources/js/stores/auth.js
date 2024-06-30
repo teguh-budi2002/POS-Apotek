@@ -17,6 +17,7 @@ export const useAuthStore = defineStore("authStore", {
         async Login(email, password) {
             try {
                 this.submitProcess = true;
+                this.isError = false;
                 const response = await apiServices.post("login/process", {
                     email,
                     password,
@@ -37,12 +38,18 @@ export const useAuthStore = defineStore("authStore", {
                 }
             } catch (error) {
                 const errorData = error?.response?.data;
-                console.log("hello error", error);
+
                 if (errorData?.status_code === 401) {
                     this.submitProcess = false;
                     this.isError = true;
                 }
             }
+        },
+        logout() {
+            Cookies.remove("token");
+            Cookies.remove("user");
+
+            this.isAuth = false;
         },
     },
 });

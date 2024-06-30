@@ -98,7 +98,7 @@ import { useAuthStore } from "../../stores/auth";
 import { useToast } from "primevue/usetoast";
 import { useForm } from "vee-validate";
 import * as Yup from "yup";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { ref } from "vue";
 
 export default {
@@ -107,6 +107,7 @@ export default {
         const toast = useToast();
         const authStore = useAuthStore();
         const router = useRouter();
+        const route = useRoute();
 
         if (localStorage.getItem("checkAuth") === "userNotAuthenticated") {
             visible.value = true;
@@ -144,6 +145,16 @@ export default {
                 router.replace({ name: "dashboard" });
             }
         });
+
+        if (route.query.isLogout) {
+            console.log("WOI", route.query.isLogout);
+            toast.add({
+                severity: "error",
+                summary: "Logout",
+                detail: "Logout Berhasil",
+                life: 3000,
+            });
+        }
 
         return {
             email,
