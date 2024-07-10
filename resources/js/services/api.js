@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getToken } from "../helpers/getToken";
 
 async function getCSRFToken() {
     try {
@@ -24,8 +25,12 @@ const apiServices = axios.create({
 
 apiServices.interceptors.request.use(async function (config) {
     const csrfToken = await getCSRFToken();
+    const authToken = getToken;
     config.headers["X-CSRF-TOKEN"] = csrfToken;
 
+    if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+    }
     return config;
 });
 
