@@ -22,6 +22,32 @@
                 APOTEK DASHBOARD
             </p>
         </div>
+        <div
+            class="mb-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+        >
+            <router-link
+                to="/dashboard"
+                class="p-3 flex items-center transition-all duration-200"
+                :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
+            >
+                <i
+                    class="fas fa-chart-line fa-lg text-gray-400 group-hover:text-gray-100 transition-colors duration-200"
+                ></i>
+                <div
+                    :class="[
+                        isSidebarExpanded
+                            ? 'opacity-100 delay-500 transition-all duration-100'
+                            : 'opacity-0 transition-all duration-100',
+                    ]"
+                >
+                    <span
+                        class="text-gray-400 group-hover:text-gray-100 ml-4 transition-color duration-200"
+                    >
+                        Dashboard
+                    </span>
+                </div>
+            </router-link>
+        </div>
         <p
             class="text-sm text-gray-500 font-bold transition-all duration-300 ml-2"
             :class="[
@@ -37,7 +63,7 @@
             class="mt-3 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
         >
             <router-link
-                to=""
+                :to="{ name: 'product' }"
                 class="p-3 flex items-center transition-all duration-200"
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >

@@ -12,6 +12,22 @@ use Illuminate\Support\Facades\Storage;
 class ProductApiController extends Controller
 {
     private $img_name = '';
+    private $getRelation;
+
+    public function __construct()
+    {
+        $this->getRelation = [
+                'category' => function($q) {
+                    $q->select("id", "name");
+                },
+                'unit' => function($q) {
+                    $q->select("id", "name");
+                },
+                'stock' => function($q) {
+                    $q->select("id", "product_id", "stock", "minimum_stock_level", "maximum_stock_level");
+                }
+            ];
+    }
 
     public function addProduct(ProductRequest $request) {
         DB::beginTransaction();
@@ -24,20 +40,36 @@ class ProductApiController extends Controller
                 $storeImage = Storage::putFileAs('/public/product', $file, $this->img_name);
                 $validation['img_product'] = $this->img_name;
             }
-            Product::create($validation);
+            $productCreated = Product::create($validation);
+            $productId = $productCreated->id;
+
+            $addedProduct = Product::with($this->getRelation)->findOrFail($productId);
             DB::commit();
             
-            return $this->responseJson(201, "Produk Berhasil Ditambah");
+            return $this->responseJson($addedProduct, 201, "Produk Berhasil Ditambah");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());
         }
     }
 
-    public function getProducts() {
-        $products = Product::get();
+    public function getProducts(Request $request) {
+        $perPage = $request->get('rows', 10);
+        $page = $request->get('page', 1);
+        $query = Product::with($this->getRelation);
+
+        if ($request->has('search')) {
+            $query->where('product_code', 'like', '%' . $request->search . '%')
+                  ->orWhere('name', 'like', '%' . $request->search . '%');
+        }
+
+        $products = $query->paginate($perPage, ['*'], 'page', $page);
+
         if ($products->isNotEmpty()) {
-            return $this->responseJson($products, 200, "Berhasil Mengambil Daftar Produk");
+            return $this->responseJson([
+                'products' => $products, 
+                'total' => $products->total()
+            ], 200, "Berhasil Mengambil Daftar Produk");
         }
 
         return $this->responseJson(404, "Tidak Ada Daftar Produk");
@@ -61,7 +93,9 @@ class ProductApiController extends Controller
             Product::whereId($product->id)->update($validation);
             DB::commit();
             
-            return $this->responseJson(201, "Produk Berhasil Diedit");
+            $newUpdatedData = Product::with($this->getRelation)->whereId($product->id)->firstOrFail();
+
+            return $this->responseJson(['newUpdatedProduct' => $newUpdatedData], 201, "Produk Berhasil Diedit");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());

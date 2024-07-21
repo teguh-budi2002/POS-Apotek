@@ -27,7 +27,7 @@ class ProductRequest extends BaseFormRequest
             'product_code' => 'required|unique:products,product_code',
             'name' => 'required',
             'unit_price' => 'required|numeric',
-            'description' => 'required',
+            'description' => 'nullable|string',
             'img_product' => 'required|file|max:2048|mimes:png,jpg,webp'
         ];
 
@@ -58,7 +58,6 @@ class ProductRequest extends BaseFormRequest
                 'required' => 'Harga wajib diisi.',
                 'numeric' => 'Harga harus berupa angka.'
             ],
-            'description.required' => 'Deskripsi wajib diisi.',
             'img_product' => [
                 "required" => 'Produk harus memiliki foto.',
                 'file' => 'Berkas yang di upload harus berupa file gambar.',

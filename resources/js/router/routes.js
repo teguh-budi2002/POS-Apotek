@@ -7,6 +7,13 @@ const routes = [
         name: "dashboard",
         component: () => import("../views/DashboardView.vue"),
         meta: { requiresAuth: true },
+        children: [
+            {
+                path: "produk",
+                name: "product",
+                component: () => import("../views/products/Product.vue"),
+            },
+        ],
     },
     {
         path: "/login",

@@ -17,39 +17,43 @@
                 ]"
             >
                 <!-- Navbar -->
-                <div class="mr-7 ml-10 pt-4">
-                    <div
-                        class="w-full flex justify-between items-center p-5 bg-white shadow-md rounded-md"
-                    >
-                        <div class="user-info flex items-center space-x-3">
-                            <div class="flex items-center space-x-3">
-                                <img
-                                    src="https://picsum.photos/300/300"
-                                    class="w-9 h-9 rounded-full"
-                                    alt=""
-                                />
-                                <p class="text-slate-600 font-semibold">
-                                    Teguh Budi Laksono
-                                </p>
-                                <div
-                                    class="flex items-center space-x-1 animate-pulse"
-                                >
+                <div class="flex justify-center">
+                    <div class="w-11/12 mt-4">
+                        <div
+                            class="w-full flex justify-between items-center p-5 bg-white shadow-md rounded-md"
+                        >
+                            <div class="user-info flex items-center space-x-3">
+                                <div class="flex items-center space-x-3">
+                                    <img
+                                        src="https://picsum.photos/300/300"
+                                        class="w-9 h-9 rounded-full"
+                                        alt=""
+                                    />
+                                    <p class="text-slate-600 font-semibold">
+                                        Teguh Budi Laksono
+                                    </p>
                                     <div
-                                        class="w-2 h-2 rounded-full bg-green-500"
-                                    ></div>
-                                    <p class="text-green-500 text-xs">Online</p>
+                                        class="flex items-center space-x-1 animate-pulse"
+                                    >
+                                        <div
+                                            class="w-2 h-2 rounded-full bg-green-500"
+                                        ></div>
+                                        <p class="text-green-500 text-xs">
+                                            Online
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div
-                            class="nav-item text-slate-600 flex items-center space-x-3"
-                        >
-                            <ButtonLogout />
+                            <div
+                                class="nav-item text-slate-600 flex items-center space-x-3"
+                            >
+                                <ButtonLogout />
+                            </div>
                         </div>
                     </div>
                 </div>
                 <!-- Content -->
-                <div class="p-4">Main Content</div>
+                <router-view></router-view>
             </div>
         </div>
     </div>
@@ -71,7 +75,6 @@ export default {
         return {
             isSidebarExpanded,
             updateSidebarState,
-            Sidebar,
         };
     },
 };

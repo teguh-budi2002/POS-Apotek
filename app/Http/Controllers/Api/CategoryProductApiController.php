@@ -25,7 +25,7 @@ class CategoryProductApiController extends Controller
     }
 
     public function getCategories() {
-        $categories = CategoryProduct::get();
+        $categories = CategoryProduct::select("id", "name", "isActive")->get();
         if ($categories->isNotEmpty()) {
             return $this->responseJson($categories, 200, "Berhasil Mengambil Daftar Category Product");
         }

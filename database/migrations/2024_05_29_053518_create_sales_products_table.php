@@ -18,17 +18,13 @@ return new class extends Migration
             $table->integer('grand_total')->nullable()->comment('Total harga include pajak, diskon(jika ada), dll.');
             $table->integer('sub_total')->comment('Total harga exclude pajak, diskon(jika ada), dll.');
             $table->integer('selling_price');
-            $table->double('profit_margin');
             $table->integer('discount')->nullable();
             $table->enum('payment_method', ["Bank Transfer", "Credit", "Cash"]);
             $table->enum("status_order", ["Pending", "Shipping", "Delivered", "Cancelled"]);
             $table->enum("status_payment", ["Paid", "Due", "Late"])->comment('Paid=dibayar, Due=tempo, Late=terlambat');
             $table->date('order_date');
-            // $table->date('expired_date');
             $table->date('paid_on')->nullable();
             $table->integer('tax')->nullable();
-            $table->integer('shipping_cost')->nullable();
-            $table->text('shipping_details')->nullable();
             $table->text('order_note')->nullable();
             $table->string('proof_of_payment')->nullable();
             $table->string('action_by')->comment('Nama admin yang melakukan aksi.');

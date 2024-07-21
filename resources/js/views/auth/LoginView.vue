@@ -147,7 +147,6 @@ export default {
         });
 
         if (route.query.isLogout) {
-            console.log("WOI", route.query.isLogout);
             toast.add({
                 severity: "error",
                 summary: "Logout",

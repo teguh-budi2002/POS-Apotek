@@ -25,7 +25,7 @@ class UnitProductApiController extends Controller
     }
 
     public function getUnits() {
-        $unit = UnitProduct::get();
+        $unit = UnitProduct::select("id", "name", "isActive")->get();
         if ($unit->isNotEmpty()) {
             return $this->responseJson($unit, 200, "Berhasil Mengambil Daftar Satuan Produk");
         }

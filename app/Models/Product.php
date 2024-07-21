@@ -17,15 +17,16 @@ class Product extends Model
         'unit_price',
         'description',
         'additional_description',
-        'img_product'
+        'img_product',
+        'isActive'
     ];
 
     public function category() {
-        return $this->belongsTo(CategoryProduct::class);
+        return $this->belongsTo(CategoryProduct::class, 'category_product_id');
     }
 
     public function unit() {
-        return $this->belongsTo(UnitProduct::class);
+        return $this->belongsTo(UnitProduct::class, 'unit_product_id');
     }
 
     public function stock() {
