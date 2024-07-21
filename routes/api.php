@@ -48,6 +48,7 @@ Route::prefix('category')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [CategoryProductApiController::class, 'getCategories']);
   Route::post('add-category', [CategoryProductApiController::class, 'createCategory']);
   Route::patch('edit-category/{id}', [CategoryProductApiController::class, 'editCategory']);
+  Route::patch('set-status/{id}', [CategoryProductApiController::class, 'setStatusCategory']);
   Route::delete('delete-category/{id}', [CategoryProductApiController::class, 'deleteCategory']);
 });
 

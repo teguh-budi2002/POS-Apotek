@@ -254,12 +254,6 @@
                         :totalRecords="totalRecords"
                         ref="dataTable"
                         :loading="loading"
-                        v-model:filters="filters"
-                        :globalFilterFields="[
-                            'product_code',
-                            'name',
-                            'unit_price',
-                        ]"
                         class="mt-4"
                     >
                         <template #header>
@@ -293,9 +287,6 @@
                                                 <i class="pi pi-search" />
                                             </InputIcon>
                                             <InputText
-                                                v-model="
-                                                    filters['global'].value
-                                                "
                                                 placeholder="Keyword pencarian"
                                             />
                                         </IconField>

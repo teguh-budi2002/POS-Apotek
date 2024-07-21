@@ -78,7 +78,7 @@ export const useProductStore = defineStore("useProductStore", {
                     newData
                 );
 
-                if (response.data.status_code === 201) {
+                if (response.data.status_code === 200) {
                     this.errorUpdateData = false;
                     const updatedProduct =
                         response.data.datas.newUpdatedProduct;

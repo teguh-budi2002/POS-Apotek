@@ -95,7 +95,7 @@ class ProductApiController extends Controller
             
             $newUpdatedData = Product::with($this->getRelation)->whereId($product->id)->firstOrFail();
 
-            return $this->responseJson(['newUpdatedProduct' => $newUpdatedData], 201, "Produk Berhasil Diedit");
+            return $this->responseJson(['newUpdatedProduct' => $newUpdatedData], 200, "Produk Berhasil Diedit");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());
