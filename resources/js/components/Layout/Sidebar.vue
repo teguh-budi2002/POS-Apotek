@@ -24,6 +24,7 @@
         </div>
         <div
             class="mb-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+             :class="[$route.name === 'dashboard' ? 'bg-slate-700/90' : '']"
         >
             <router-link
                 to="/dashboard"
@@ -31,7 +32,8 @@
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >
                 <i
-                    class="fas fa-chart-line fa-lg text-gray-400 group-hover:text-gray-100 transition-colors duration-200"
+                    class="fas fa-chart-line fa-lg group-hover:text-blue-300 transition-colors duration-200"
+                    :class="[$route.name === 'dashboard' ? 'text-blue-300' : 'text-blue-400']"
                 ></i>
                 <div
                     :class="[
@@ -42,6 +44,7 @@
                 >
                     <span
                         class="text-gray-400 group-hover:text-gray-100 ml-4 transition-color duration-200"
+                        :class="[$route.name === 'dashboard' ? 'text-gray-300' : 'text-gray-400']"
                     >
                         Dashboard
                     </span>
@@ -61,6 +64,7 @@
         <!-- Single Menu -->
         <div
             class="mt-3 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            :class="[$route.name === 'product' ? 'bg-slate-700/90' : '']"
         >
             <router-link
                 :to="{ name: 'product' }"
@@ -68,7 +72,8 @@
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >
                 <i
-                    class="fas fa-box-open fa-lg text-gray-400 group-hover:text-gray-100 transition-colors duration-200"
+                    class="fas fa-box-open fa-lg group-hover:text-yellow-300 transition-colors duration-200"
+                    :class="[$route.name === 'product' ? 'text-yellow-300' : 'text-yellow-400']"
                 ></i>
                 <div
                     :class="[
@@ -78,15 +83,45 @@
                     ]"
                 >
                     <span
-                        class="text-gray-400 group-hover:text-gray-100 ml-4 transition-color duration-200"
+                        class="group-hover:text-gray-100 ml-3 transition-color duration-200"
+                        :class="[$route.name === 'product' ? 'text-gray-300' : 'text-gray-400']"
                     >
                         Produk
                     </span>
                 </div>
             </router-link>
         </div>
+        <div
+            class="mt-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            :class="[$route.name === 'category' ? 'bg-slate-700/90' : '']"
+        >
+            <router-link
+                :to="{ name: 'category' }"
+                class="p-3 flex items-center transition-all duration-200"
+                :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
+            >
+                <i
+                    class="fas fa-layer-group fa-lg group-hover:text-teal-300 transition-colors duration-200"
+                    :class="[$route.name === 'category' ? 'text-teal-300' : 'text-teal-400']"
+                ></i>
+                <div
+                    :class="[
+                        isSidebarExpanded
+                            ? 'opacity-100 delay-500 transition-all duration-100'
+                            : 'opacity-0 transition-all duration-100',
+                    ]"
+                >
+                    <span
+                        class="text-gray-400 group-hover:text-gray-100 ml-3 transition-color duration-200"
+                        :class="[$route.name === 'category' ? 'text-gray-300' : 'text-gray-400']"
+                    >
+                        Kategori
+                    </span>
+                </div>
+            </router-link>
+        </div>
         <!-- Dropdown Menu -->
-        <div class="rounded-md group">
+        <!-- <div class="rounded-md group">
             <div
                 class="p-3 flex justify-between items-center transition-all duration-200 cursor-pointer"
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
@@ -104,9 +139,9 @@
                         ]"
                     >
                         <span
-                            class="text-gray-400 group-hover:text-gray-100 ml-4 transition-color duration-200"
+                            class="text-gray-400 group-hover:text-gray-100 ml-3 transition-color duration-200"
                         >
-                            Kategori
+                            Dropdown Menu
                         </span>
                     </div>
                 </div>
@@ -141,12 +176,12 @@
                     >
                         <span
                             class="text-sm whitespace-nowrap text-gray-300 group-hover:text-gray-100"
-                            >Tambah Kategori</span
+                            >Testing</span
                         >
                     </router-link>
                 </li>
             </ul>
-        </div>
+        </div> -->
     </div>
 </template>
 
