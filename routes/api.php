@@ -46,6 +46,7 @@ Route::prefix('product')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('category')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [CategoryProductApiController::class, 'getCategories']);
+  Route::get('/pagination', [CategoryProductApiController::class, 'getPaginateCategories']);
   Route::post('add-category', [CategoryProductApiController::class, 'createCategory']);
   Route::patch('edit-category/{id}', [CategoryProductApiController::class, 'editCategory']);
   Route::patch('set-status/{id}', [CategoryProductApiController::class, 'setStatusCategory']);

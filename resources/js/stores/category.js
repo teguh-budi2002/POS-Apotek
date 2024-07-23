@@ -17,7 +17,7 @@ export const useCategoryStore = defineStore("useCategoryStore", {
         async getCategoryPerPage(page = 1, rows = 10) {
             this.errorGetCategories = false;
             try {
-                const response = await apiServices.get("category", {
+                const response = await apiServices.get("category/pagination", {
                     params: {
                         page,
                         rows,
@@ -34,6 +34,22 @@ export const useCategoryStore = defineStore("useCategoryStore", {
                 if (error?.response?.data?.status_code === 404) {
                     this.categories = [];
                     this.totalRecords = 0;
+                    console.log(error.response.data, "404");
+                }
+            }
+        },
+        async getAllCategoryProduct() {
+            this.errorGetCategories = false;
+            try {
+                const response = apiServices.get('categories')
+
+                if (response.data.status_code === 200) {
+                    this.categories = response.data.datas.categories.data;
+                }
+            } catch (error) {
+                 this.errorGetCategories = true;
+                if (error?.response?.data?.status_code === 404) {
+                    this.categories = [];
                     console.log(error.response.data, "404");
                 }
             }

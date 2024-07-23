@@ -25,7 +25,19 @@ class CategoryProductApiController extends Controller
         }
     }
 
-    public function getCategories(Request $request) {
+    public function getCategories() {
+        $categories = CategoryProduct::select("id", "name", "isActive")->get();
+
+        if ($categories->isNotEmpty()) {
+            return $this->responseJson([
+                'categories' => $categories, 
+            ], 200, "Berhasil Mengambil Daftar Kategori Produk");
+        }
+
+        return $this->responseJson(404, "Tidak Ada Daftar Kategori Produk");
+    }
+
+    public function getPaginateCategories(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
         $query = CategoryProduct::query();
@@ -40,10 +52,10 @@ class CategoryProductApiController extends Controller
             return $this->responseJson([
                 'categories' => $categories, 
                 'total' => $categories->total()
-            ], 200, "Berhasil Mengambil Daftar Kategori Produk");
+            ], 200, "Berhasil Mengambil Daftar Paginasi Kategori Produk");
         }
 
-        return $this->responseJson(404, "Tidak Ada Daftar Kategori Produk");
+        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Kategori Produk");
     }
 
     public function editCategory(CategoryProductRequest $request, $categoryId) {
