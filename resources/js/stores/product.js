@@ -113,6 +113,26 @@ export const useProductStore = defineStore("useProductStore", {
                 this.errorDeleteProduct = true;
             }
         },
+        async setStatus(status, productId) {
+            this.errorUpdateData = false;
+             try {
+                 const response = await apiServices.patch(`product/set-status/${productId}`, {
+                     'status': status
+                 })
+
+                 if (response.data.status_code == 200) {
+                    const updatedProduct = response.data.datas.newUpdatedProduct;
+                    const indexOfProduct = this.products.findIndex(
+                        (p) => p.id === updatedProduct.id
+                    );
+                    if (indexOfProduct !== -1) {
+                        this.products.splice(indexOfProduct, 1, updatedProduct);
+                    }
+                 }
+             } catch (error) {
+                 this.errorUpdateData = true
+             }
+         }
     },
     persist: true,
 });

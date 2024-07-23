@@ -18,7 +18,7 @@ class ProductApiController extends Controller
     {
         $this->getRelation = [
                 'category' => function($q) {
-                    $q->select("id", "name");
+                    $q->select("id", "name", "isActive")->where('isActive', 1);
                 },
                 'unit' => function($q) {
                     $q->select("id", "name");
@@ -96,6 +96,25 @@ class ProductApiController extends Controller
             $newUpdatedData = Product::with($this->getRelation)->whereId($product->id)->firstOrFail();
 
             return $this->responseJson(['newUpdatedProduct' => $newUpdatedData], 200, "Produk Berhasil Diedit");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->responseJson(500, $th->getMessage());
+        }
+    }
+
+    public function setStatusProduct(Request $request, $productId) {
+        DB::beginTransaction();
+        try {
+            Product::whereId($productId)->update([
+                'isActive' => $request->status
+            ]);
+            DB::commit();
+
+            $newUpdatedData = Product::with($this->getRelation)->whereId($productId)->firstOrFail();
+
+            return $this->responseJson([
+                'newUpdatedProduct' => $newUpdatedData
+            ],200, "Status Product Berhasil Diedit");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());

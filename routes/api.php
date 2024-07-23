@@ -41,6 +41,7 @@ Route::prefix('product')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ProductApiController::class, 'getProducts']);
   Route::post('add-product',[ProductApiController::class, 'addProduct']);
   Route::patch('edit-product/{product:id}',[ProductApiController::class, 'editProduct']);
+  Route::patch('set-status/{id}', [ProductApiController::class, 'setStatusProduct']);
   Route::delete('delete-product/{id}',[ProductApiController::class, 'deleteProduct']);
 });
 

@@ -41,10 +41,10 @@ export const useCategoryStore = defineStore("useCategoryStore", {
         async getAllCategoryProduct() {
             this.errorGetCategories = false;
             try {
-                const response = apiServices.get('categories')
+                const response = await apiServices.get('category')
 
                 if (response.data.status_code === 200) {
-                    this.categories = response.data.datas.categories.data;
+                    this.categories = response.data.datas.categories;
                 }
             } catch (error) {
                  this.errorGetCategories = true;
@@ -124,11 +124,11 @@ export const useCategoryStore = defineStore("useCategoryStore", {
 
                  if (response.data.status_code == 200) {
                     const updatedCategory = response.data.datas.newUpdatedCategory;
-                    const indexOfProduct = this.categories.findIndex(
+                    const indexOfCategory = this.categories.findIndex(
                         (p) => p.id === updatedCategory.id
                     );
-                    if (indexOfProduct !== -1) {
-                        this.categories.splice(indexOfProduct, 1, updatedCategory);
+                    if (indexOfCategory !== -1) {
+                        this.categories.splice(indexOfCategory, 1, updatedCategory);
                     }
                  }
              } catch (error) {

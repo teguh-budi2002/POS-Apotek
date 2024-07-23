@@ -142,6 +142,9 @@
                                 <div v-if="slotProps.data.category">
                                     {{ slotProps.data.category.name }}
                                 </div>
+                                <div v-else>
+                                    <p class="text-xs text-rose-500">Kategori Di Nonaktifkan</p>
+                                </div>
                             </template>
                             <template #editor="{ data, field }">
                                 <Select
@@ -330,10 +333,14 @@
                             Nama Produk:
                             {{ selectedDialogProduct.name }}
                         </p>
-                        <p>
-                            Kategori Produk:
-                            {{ selectedDialogProduct.category.name }}
-                        </p>
+                        <div v-if="selectedDialogProduct.category" class="flex items-center space-x-1">
+                            <p>Kategori Produk:</p>
+                            <p>{{ selectedDialogProduct.category.name }}</p>
+                        </div>
+                        <div v-else class="flex items-center space-x-1">
+                            <p>Kategori Produk:</p>
+                            <p class="text-rose-500">Kategori Di Nonaktifkan</p>
+                        </div>
                         <p>
                             Harga Produk:
                             {{
@@ -569,9 +576,8 @@
     </Content>
 </template>
 <script>
-import { ref, onMounted, watchEffect } from "vue";
+import { ref, onMounted, watchEffect, computed } from "vue";
 import Content from "../../components/Layout/Content.vue";
-import { FilterMatchMode } from "@primevue/core/api";
 import InputText from "primevue/inputtext";
 import InputNumber from "primevue/inputnumber";
 import InputGroup from "primevue/inputgroup";
@@ -871,14 +877,28 @@ export default {
             loading.value = false;
         };
 
-        const menuModel = ref([
+        const labelStatusProduct = ref('')
+        const iconStatusProduct = ref('')
+        const menuModel = computed(() => [
             {
                 label: "Delete",
                 icon: "pi pi-fw pi-times",
                 command: () => deleteProduct(selectedProduct),
             },
+            {
+                label: labelStatusProduct.value,
+                icon: iconStatusProduct.value,
+                command: () => setStatusProduct(selectedProduct),
+            },
         ]);
         const onRowContextMenu = (event) => {
+            if (event.data.isActive) {
+                labelStatusProduct.value = "Draft"
+                iconStatusProduct.value = "pi pi-fw pi-lock"
+            } else {
+                labelStatusProduct.value = "Active"
+                iconStatusProduct.value = "pi pi-fw pi-lock-open"
+            }
             cm.value.show(event.originalEvent);
         };
 
@@ -904,6 +924,35 @@ export default {
 
             loading.value = false;
         };
+
+        const setStatusProduct = async (prod) => {
+            loading.value = true;
+            const status = ref()
+            if (prod.value.isActive) {
+                status.value = 0
+            } else {
+                status.value = 1
+            }
+            await productStore.setStatus(status.value, prod.value.id);
+
+            if (productStore.errorUpdateData) {
+                toast.add({
+                    severity: "error",
+                    life: 3000,
+                    summary: "Update Status Product Failed",
+                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+                });
+            } else {
+                toast.add({
+                    severity: "success",
+                    life: 3000,
+                    summary: "Update Status Product Successfully",
+                    detail: "Update Status Produk Berhasil",
+                });
+            }
+
+            loading.value = false;
+        }
 
         const showDetailProduct = (product) => {
             selectedDialogProduct.value = product;
