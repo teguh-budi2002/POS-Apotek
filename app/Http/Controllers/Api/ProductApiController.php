@@ -21,7 +21,7 @@ class ProductApiController extends Controller
                     $q->select("id", "name", "isActive")->where('isActive', 1);
                 },
                 'unit' => function($q) {
-                    $q->select("id", "name");
+                    $q->select("id", "name", "isActive")->where('isActive', 1);
                 },
                 'stock' => function($q) {
                     $q->select("id", "product_id", "stock", "minimum_stock_level", "maximum_stock_level");

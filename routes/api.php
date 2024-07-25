@@ -56,8 +56,10 @@ Route::prefix('category')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [UnitProductApiController::class, 'getUnits']);
+  Route::get('/pagination', [UnitProductApiController::class, 'getPaginateUnits']);
   Route::post('add-unit', [UnitProductApiController::class, 'createUnit']);
   Route::patch('edit-unit/{id}', [UnitProductApiController::class, 'editUnit']);
+  Route::patch('set-status/{id}', [UnitProductApiController::class, 'setStatusUnit']);
   Route::delete('delete-unit/{id}', [UnitProductApiController::class, 'deleteUnit']);
 });
 

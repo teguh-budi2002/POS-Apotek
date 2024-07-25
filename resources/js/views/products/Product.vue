@@ -201,6 +201,9 @@
                                 <div v-if="slotProps.data.unit">
                                     {{ slotProps.data.unit.name }}
                                 </div>
+                                <div v-else>
+                                    <p class="text-xs text-rose-500">Satuan Di Nonaktifkan</p>
+                                </div>
                             </template>
                             <template #editor="{ data, field }">
                                 <Select
@@ -349,10 +352,14 @@
                                 )
                             }}
                         </p>
-                        <p>
-                            Satuan Produk:
-                            {{ selectedDialogProduct.unit.name }}
-                        </p>
+                        <div v-if="selectedDialogProduct.unit" class="flex items-center space-x-1">
+                            <p>Satuan Produk:</p>
+                            <p>{{ selectedDialogProduct.unit.name }}</p>
+                        </div>
+                        <div v-else class="flex items-center space-x-1">
+                            <p>Satuan Produk:</p>
+                            <p class="text-rose-500">Satuan Di Nonaktifkan</p>
+                        </div>
                         <div v-if="selectedDialogProduct.stock">
                             <p>
                                 Stok Produk:

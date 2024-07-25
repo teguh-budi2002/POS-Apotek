@@ -18,6 +18,11 @@ const routes = [
                 name: "category",
                 component: () => import("../views/categories/Category.vue"),
             },
+            {
+                path: "satuan",
+                name: "unit",
+                component: () => import("../views/units/Unit.vue"),
+            },
         ],
     },
     {

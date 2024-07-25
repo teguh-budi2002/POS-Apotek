@@ -120,6 +120,35 @@
                 </div>
             </router-link>
         </div>
+        <div
+            class="mt-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            :class="[$route.name === 'unit' ? 'bg-slate-700/90' : '']"
+        >
+            <router-link
+                :to="{ name: 'unit' }"
+                class="p-3 flex items-center transition-all duration-200"
+                :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
+            >
+                <i
+                    class="fas fa-boxes-stacked fa-lg group-hover:text-lime-300 transition-colors duration-200"
+                    :class="[$route.name === 'unit' ? 'text-lime-300' : 'text-lime-400']"
+                ></i>
+                <div
+                    :class="[
+                        isSidebarExpanded
+                            ? 'opacity-100 delay-500 transition-all duration-100'
+                            : 'opacity-0 transition-all duration-100',
+                    ]"
+                >
+                    <span
+                        class="text-gray-400 group-hover:text-gray-100 ml-3 transition-color duration-200"
+                        :class="[$route.name === 'unit' ? 'text-gray-300' : 'text-gray-400']"
+                    >
+                        Satuan
+                    </span>
+                </div>
+            </router-link>
+        </div>
         <!-- Dropdown Menu -->
         <!-- <div class="rounded-md group">
             <div

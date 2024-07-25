@@ -14,10 +14,11 @@ class UnitProductApiController extends Controller
         DB::beginTransaction();
         try {
             $validation = $request->validated();
-            UnitProduct::create($validation);
+            $createUnit =  UnitProduct::create($validation);
+            $addedUnit = UnitProduct::select("id", "name", "isActive")->findOrFail($createUnit->id);
             DB::commit();
             
-            return $this->responseJson(201, "Satuan Produk Berhasil Dibuat");
+            return $this->responseJson($addedUnit, 201, "Satuan Produk Berhasil Dibuat");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());
@@ -32,6 +33,27 @@ class UnitProductApiController extends Controller
         return $this->responseJson(404, "Tidak Ada Daftar Satuan Produk");
     }
 
+    public function getPaginateUnits(Request $request) {
+        $perPage = $request->get('rows', 10);
+        $page = $request->get('page', 1);
+        $query = UnitProduct::query();
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $units = $query->paginate($perPage, ['*'], 'page', $page);
+
+        if ($units->isNotEmpty()) {
+            return $this->responseJson([
+                'units' => $units, 
+                'total' => $units->total()
+            ], 200, "Berhasil Mengambil Daftar Paginasi Unit Produk");
+        }
+
+        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Kategori Produk");
+    }
+
     public function editUnit(UnitProductRequest $request, $unitId) {
         DB::beginTransaction();
         try {
@@ -39,7 +61,30 @@ class UnitProductApiController extends Controller
             $doUpdate = UnitProduct::whereId($unitId)->update($validation);
             DB::commit();
 
-            return $this->responseJson(200, "Satuan Produk Berhasil Diedit");
+            $newUpdatedData = UnitProduct::whereId($unitId)->firstOrFail();
+
+            return $this->responseJson([
+                'newUpdatedUnit' => $newUpdatedData
+            ],200, "Satuan Produk Berhasil Diedit");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->responseJson(500, $th->getMessage());
+        }
+    }
+
+    public function setStatusUnit(Request $request, $unitId) {
+        DB::beginTransaction();
+        try {
+            UnitProduct::whereId($unitId)->update([
+                'isActive' => $request->status
+            ]);
+            DB::commit();
+
+            $newUpdatedData = UnitProduct::whereId($unitId)->firstOrFail();
+
+            return $this->responseJson([
+                'newUpdatedUnit' => $newUpdatedData
+            ],200, "Status Unit Product Berhasil Diedit");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());
