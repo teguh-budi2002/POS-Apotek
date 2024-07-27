@@ -11,6 +11,10 @@ export const useProductStore = defineStore("useProductStore", {
         errorDeleteProduct: false,
         filters: {
             search: ''
+        },
+        infoDeletedProduct: {
+            id: null,
+            name: null
         }
     }),
     getters: {
@@ -132,7 +136,15 @@ export const useProductStore = defineStore("useProductStore", {
              } catch (error) {
                  this.errorUpdateData = true
              }
-         }
+        },
+        setInfoDeletedProduct(id, name) {
+            this.infoDeletedProduct.id = id
+            this.infoDeletedProduct.name = name
+        },
+        clearInfoDeletedProduct(id) {
+            this.infoDeletedProduct.id = null
+            this.infoDeletedProduct.name = null
+        }
     },
     persist: true,
 });

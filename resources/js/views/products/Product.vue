@@ -400,6 +400,16 @@
                     />
                 </template>
             </Dialog>
+            <Dialog v-model:visible="showDialogDeleteProduct" :style="{width: '35rem'}" header="Hapus Produk" :modal="true">
+                <div class="confirmation-content flex flex-col items-center space-y-2">
+                    <i class="pi pi-exclamation-triangle text-rose-500" style="font-size: 2rem" />
+                    <p class="">Yakin ingin menghapus produk <b>{{ productStore.infoDeletedProduct.name }}</b> ?</p>
+                </div>
+                <template #footer>
+                    <Button @click="showDialogDeleteProduct = false" icon="pi pi-times" label="Tutup" severity="secondary" text/>
+                    <Button @click="deleteProduct" icon="pi pi-check" label="Yes" severity="danger" text />
+                </template>
+            </Dialog>
             <Drawer
                 v-model:visible="openDrawer"
                 header="Tambah Produk"
@@ -631,6 +641,7 @@ export default {
         const { getAllUnitProduct, units } = useUnitProductStore();
         const toast = useToast();
         const showDialogDetailProduct = ref(false);
+        const showDialogDeleteProduct = ref(false);
         const dataTable = ref([]);
         const searchQuery = ref('')
         const cm = ref();
@@ -890,7 +901,7 @@ export default {
             {
                 label: "Delete",
                 icon: "pi pi-fw pi-times",
-                command: () => deleteProduct(selectedProduct),
+                command: () => showDialogDeleteProduct.value = true,
             },
             {
                 label: labelStatusProduct.value,
@@ -906,12 +917,15 @@ export default {
                 labelStatusProduct.value = "Active"
                 iconStatusProduct.value = "pi pi-fw pi-lock-open"
             }
+            productStore.setInfoDeletedProduct(event.data.id, event.data.name)
+
             cm.value.show(event.originalEvent);
         };
 
-        const deleteProduct = async (prod) => {
+        const deleteProduct = async () => {
             loading.value = true;
-            await productStore.deleteProduct(prod.value.id);
+            const productId = productStore.infoDeletedProduct.id
+            await productStore.deleteProduct(productId);
 
             if (productStore.errorDeleteProduct) {
                 toast.add({
@@ -921,6 +935,8 @@ export default {
                     detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
                 });
             } else {
+                productStore.clearInfoDeletedProduct()
+                showDialogDeleteProduct.value = false
                 toast.add({
                     severity: "success",
                     life: 3000,
@@ -968,6 +984,7 @@ export default {
 
         return {
             products,
+            productStore,
             totalRecords,
             showDialogDetailProduct,
             showDetailProduct,
@@ -1021,7 +1038,9 @@ export default {
             onFileSelect,
             rows,
             rowsPerPageOptions,
-            onRowsChange
+            onRowsChange,
+            showDialogDeleteProduct,
+            deleteProduct
         };
     },
 };
