@@ -60,7 +60,7 @@ Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [UnitProductApiController::class, 'getUnits']);
   Route::get('/pagination', [UnitProductApiController::class, 'getPaginateUnits']);
   Route::get('/trashed', [UnitProductApiController::class, 'getTrashedUnit']);
-  Route::post('restore-unit/{id}', [UnitProductApiController::class, 'restoreTrashedUnits']);
+  Route::post('restore-unit/{id}', [UnitProductApiController::class, 'restoreTrashedUnit']);
   Route::post('add-unit', [UnitProductApiController::class, 'createUnit']);
   Route::patch('edit-unit/{id}', [UnitProductApiController::class, 'editUnit']);
   Route::patch('set-status/{id}', [UnitProductApiController::class, 'setStatusUnit']);

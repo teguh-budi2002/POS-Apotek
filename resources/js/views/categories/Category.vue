@@ -262,7 +262,7 @@
     </Content>
 </template>
 <script>
-import { ref, onMounted, watchEffect, computed } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import Content from "../../components/Layout/Content.vue";
 import InputText from "primevue/inputtext";
 import InputNumber from "primevue/inputnumber";
@@ -358,8 +358,10 @@ export default {
             loadCategories()
         }, 500)
 
-        watchEffect(() => {
-            debouncedSearch(searchQuery.value)
+        watch(searchQuery, (newQuery, oldQuery) => {
+            if (newQuery !== oldQuery) {
+                debouncedSearch(newQuery)
+            }
         })
 
         const exportExcel = async () => {

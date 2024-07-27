@@ -262,7 +262,7 @@
     </Content>
 </template>
 <script>
-import { ref, onMounted, watchEffect, computed } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import Content from "../../components/Layout/Content.vue";
 import InputText from "primevue/inputtext";
 import InputNumber from "primevue/inputnumber";
@@ -317,10 +317,12 @@ export default {
         ])
         const rows = ref(10)
         const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
+        const isMounted = ref(false);
 
         onMounted(async () => {
             await loadUnits();
             await loadTrashedUnits();
+            isMounted.value = true;
         });
 
         const loadUnits = async (page = 1, rowsPerPage = rows.value) => {
@@ -358,8 +360,10 @@ export default {
             loadUnits()
         }, 500)
 
-        watchEffect(() => {
-            debouncedSearch(searchQuery.value)
+        watch(searchQuery, (newQuery, oldQuery) => {
+            if (newQuery !== oldQuery) {
+                debouncedSearch(newQuery);
+            }
         })
 
         const exportExcel = async () => {
