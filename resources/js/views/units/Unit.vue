@@ -58,6 +58,9 @@
                                 </div>
                                 <div class="flex items-center space-x-4">
                                     <div class="flex items-center space-x-2">
+                                        <div v-show="trashed_units.length">
+                                            <Button icon="pi pi-trash" v-tooltip.top="{ value: 'Sampah' }" @click="showTrashedUnitDialog = true" class="!bg-rose-800 hover:!bg-rose-600 !border-none"/>
+                                        </div>
                                         <Button
                                             type="button"
                                             icon="pi pi-filter-slash"
@@ -188,6 +191,18 @@
                     </DataTable>
                 </div>
             </div>
+            <Dialog v-model:visible="showTrashedUnitDialog" :style="{width: '35rem'}" header="Daftar Sampah" :modal="true">
+                <div v-for="t in trashed_units" :key="t.id">
+                    <div class="flex items-center justify-between mb-2 mt-2">
+                        <p>{{ t.name }}</p>
+                        <Button size="small" @click="restoreUnit(t.id)" severity="success" label="Pulihkan"/>
+                    </div>
+                    <hr>
+                </div>
+                <template #footer>
+                    <Button @click="showTrashedUnitDialog = false" icon="pi pi-times" label="Tutup" severity="secondary" text/>
+                </template>
+            </Dialog>
             <Drawer
                 v-model:visible="openDrawer"
                 header="Tambah Satuan"
@@ -283,10 +298,12 @@ export default {
     setup() {
         const unitStore = useUnitProductStore();
         const units = ref([])
+        const trashed_units = ref([])
         const totalRecords = ref(0);
         const selectedUnit = ref();
         const selectedDialogUnit = ref();
         const selectedIsActiveOption = ref(1)
+        const showTrashedUnitDialog = ref(false)
         const toast = useToast();
         const dataTable = ref([]);
         const searchQuery = ref('')
@@ -303,6 +320,7 @@ export default {
 
         onMounted(async () => {
             await loadUnits();
+            await loadTrashedUnits();
         });
 
         const loadUnits = async (page = 1, rowsPerPage = rows.value) => {
@@ -311,6 +329,14 @@ export default {
             await unitStore.getUnitPerPage(page, rowsPerPage);
             units.value = unitStore.units;
             totalRecords.value = unitStore.totalRecords;
+            loading.value = false;
+        };
+
+        const loadTrashedUnits = async () => {
+            loading.value = true;
+
+            await unitStore.getTrashedUnit();
+            trashed_units.value = unitStore.trashed_units;
             loading.value = false;
         };
 
@@ -512,6 +538,29 @@ export default {
             loading.value = false;
         };
 
+        const restoreUnit = async (unitId) => {
+            loading.value = true;
+            await unitStore.restoreUnit(unitId)
+
+            if (unitStore.errorAddedData) {
+                toast.add({
+                    severity: "error",
+                    life: 3000,
+                    summary: "Restore Unit Failed",
+                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+                });
+            } else {
+                showTrashedUnitDialog.value = false
+                toast.add({
+                    severity: "success",
+                    life: 3000,
+                    summary: "Restore Unit Successfully",
+                    detail: "Satuan Berhasil Di Pulihkan",
+                });
+            }
+            loading.value = false;
+        }
+
         const setStatusUnit = async (cat) => {
             loading.value = true;
             const status = ref()
@@ -543,6 +592,7 @@ export default {
 
         return {
             units,
+            trashed_units,
             totalRecords,
             selectedUnit,
             selectedDialogUnit,
@@ -574,7 +624,9 @@ export default {
             submitUnit,
             rows,
             rowsPerPageOptions,
-            onRowsChange
+            onRowsChange,
+            showTrashedUnitDialog,
+            restoreUnit
         };
     },
 };

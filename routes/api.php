@@ -48,6 +48,8 @@ Route::prefix('product')->middleware('auth:sanctum')->group(function() {
 Route::prefix('category')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [CategoryProductApiController::class, 'getCategories']);
   Route::get('/pagination', [CategoryProductApiController::class, 'getPaginateCategories']);
+  Route::get('/trashed', [CategoryProductApiController::class, 'getTrashedCategories']);
+  Route::post('restore-category/{id}', [CategoryProductApiController::class, 'restoreTrashedCategory']);
   Route::post('add-category', [CategoryProductApiController::class, 'createCategory']);
   Route::patch('edit-category/{id}', [CategoryProductApiController::class, 'editCategory']);
   Route::patch('set-status/{id}', [CategoryProductApiController::class, 'setStatusCategory']);
@@ -57,6 +59,8 @@ Route::prefix('category')->middleware('auth:sanctum')->group(function() {
 Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [UnitProductApiController::class, 'getUnits']);
   Route::get('/pagination', [UnitProductApiController::class, 'getPaginateUnits']);
+  Route::get('/trashed', [UnitProductApiController::class, 'getTrashedUnit']);
+  Route::post('restore-unit/{id}', [UnitProductApiController::class, 'restoreTrashedUnits']);
   Route::post('add-unit', [UnitProductApiController::class, 'createUnit']);
   Route::patch('edit-unit/{id}', [UnitProductApiController::class, 'editUnit']);
   Route::patch('set-status/{id}', [UnitProductApiController::class, 'setStatusUnit']);

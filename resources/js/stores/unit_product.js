@@ -4,6 +4,7 @@ import apiServices from "../services/api";
 export const useUnitProductStore = defineStore("useUnitProductStore", {
     state: () => ({
         units: [],
+        trashed_units: [],
         totalRecords: 0,
         errorGetUnits: false,
         errorAddedData: false,
@@ -49,6 +50,27 @@ export const useUnitProductStore = defineStore("useUnitProductStore", {
                 }
             } catch (error) {
                 this.errorGetUnits = true;
+                if (error?.response?.data?.status_code === 404) {
+                    this.units = []
+                    console.log(error.response.data, "404");
+                }
+            }
+        },
+        async getTrashedUnit() {
+            try {
+                this.errorGetUnits = false;
+
+                const response = await apiServices.get("unit/trashed");
+
+                if (response.data.status_code === 200) {
+                    this.trashed_units = response.data.datas;
+                }
+            } catch (error) {
+                this.errorGetUnits = true;
+                if (error?.response?.data?.status_code === 404) {
+                    this.trashed_units = []
+                    console.log(error.response.data, "404");
+                }
             }
         },
         async addUnit(datas) {
@@ -100,16 +122,34 @@ export const useUnitProductStore = defineStore("useUnitProductStore", {
 
                 if (response.data.status_code === 200) {
                     this.errorDeleteUnit = false;
+                    const trashedUnit = response.data.datas.trashedUnit
 
-                    const index = this.units.findIndex(
-                        (unit) => unit.id === unitId
-                    );
-                    if (index !== -1) {
-                        this.units.splice(index, 1);
+                    const indexOfUnit = this.units.findIndex((unit) => unit.id === unitId);
+                    if (indexOfUnit !== -1) {
+                        this.units.splice(indexOfUnit, 1);
+                        this.trashed_units.splice(this.trashed_units.length, 0, trashedUnit)
                     }
                 }
             } catch (error) {
                 this.errorDeleteUnit = true;
+            }
+        },
+        async restoreUnit(unitId) {
+            try {
+                const response = await apiServices.post(`unit/restore-unit/${unitId}`)
+                
+                if (response.data.status_code === 200) {
+                    this.errorAddedData = false;
+                    const restoredUnit = response.data.datas.restoredUnit
+                    const indexOfRestoredUnit = this.trashed_units.findIndex((trashed) => trashed.id === restoredUnit.id)
+
+                    if (indexOfRestoredUnit !== -1) { 
+                        this.trashed_units.splice(indexOfRestoredUnit, 1)
+                    }
+                    this.units.splice(this.units.length, 0, restoredUnit)
+                }
+            } catch (error) {
+                this.errorAddedData = true;
             }
         },
         async setStatus(status, unitId) {

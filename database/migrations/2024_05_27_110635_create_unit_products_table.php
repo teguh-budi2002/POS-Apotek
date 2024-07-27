@@ -16,14 +16,14 @@ return new class extends Migration
             $table->string('name');
             $table->boolean('isActive')->default(1);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::table('products', function (Blueprint $table) {
             $table->foreignId('unit_product_id')
                   ->after('category_product_id')
                   ->constrained()
-                  ->onUpdate('cascade')
-                  ->onDelete('cascade');
+                  ->onUpdate('cascade');
         });
     }
 

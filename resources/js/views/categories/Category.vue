@@ -57,6 +57,9 @@
                                     />
                                 </div>
                                 <div class="flex items-center space-x-4">
+                                    <div v-show="trashed_categories.length">
+                                        <Button icon="pi pi-trash" v-tooltip.top="{ value: 'Sampah' }" @click="showTrashedCategoriesDialog = true" class="!bg-rose-800 hover:!bg-rose-600 !border-none"/>
+                                    </div>
                                     <div class="flex items-center space-x-2">
                                         <Button
                                             type="button"
@@ -188,6 +191,18 @@
                     </DataTable>
                 </div>
             </div>
+            <Dialog v-model:visible="showTrashedCategoriesDialog" :style="{width: '35rem'}" header="Daftar Sampah" :modal="true">
+                <div v-for="t in trashed_categories" :key="t.id">
+                    <div class="flex items-center justify-between mb-2 mt-2">
+                        <p>{{ t.name }}</p>
+                        <Button size="small" @click="restoreCategory(t.id)" severity="success" label="Pulihkan"/>
+                    </div>
+                    <hr>
+                </div>
+                <template #footer>
+                    <Button @click="showTrashedCategoriesDialog = false" icon="pi pi-times" label="Tutup" severity="secondary" text/>
+                </template>
+            </Dialog>
             <Drawer
                 v-model:visible="openDrawer"
                 header="Tambah Kategori"
@@ -283,9 +298,11 @@ export default {
     setup() {
         const categoryStore = useCategoryStore();
         const categories = ref([])
+        const trashed_categories = ref([])
         const totalRecords = ref(0);
         const selectedCategory = ref();
         const selectedDialogCategory = ref();
+        const showTrashedCategoriesDialog = ref(false)
         const selectedIsActiveOption = ref(1)
         const toast = useToast();
         const dataTable = ref([]);
@@ -303,6 +320,7 @@ export default {
 
         onMounted(async () => {
             await loadCategories();
+            await loadTrashedCategories();
         });
 
         const loadCategories = async (page = 1, rowsPerPage = rows.value) => {
@@ -311,6 +329,14 @@ export default {
             await categoryStore.getCategoryPerPage(page, rowsPerPage);
             categories.value = categoryStore.categories;
             totalRecords.value = categoryStore.totalRecords;
+            loading.value = false;
+        };
+
+        const loadTrashedCategories = async () => {
+            loading.value = true;
+
+            await categoryStore.getTrashedCategories();
+            trashed_categories.value = categoryStore.trashed_categories;
             loading.value = false;
         };
 
@@ -512,6 +538,29 @@ export default {
             loading.value = false;
         };
 
+        const restoreCategory = async (unitId) => {
+            loading.value = true;
+            await categoryStore.restoreCategory(unitId)
+
+            if (categoryStore.errorAddedData) {
+                toast.add({
+                    severity: "error",
+                    life: 3000,
+                    summary: "Restore Unit Failed",
+                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+                });
+            } else {
+                showTrashedCategoriesDialog.value = false
+                toast.add({
+                    severity: "success",
+                    life: 3000,
+                    summary: "Restore Unit Successfully",
+                    detail: "Satuan Berhasil Di Pulihkan",
+                });
+            }
+            loading.value = false;
+        }
+
         const setStatusCategory = async (cat) => {
             loading.value = true;
             const status = ref()
@@ -543,6 +592,7 @@ export default {
 
         return {
             categories,
+            trashed_categories,
             totalRecords,
             selectedCategory,
             selectedDialogCategory,
@@ -574,7 +624,9 @@ export default {
             submitCategory,
             rows,
             rowsPerPageOptions,
-            onRowsChange
+            onRowsChange,
+            showTrashedCategoriesDialog,
+            restoreCategory
         };
     },
 };

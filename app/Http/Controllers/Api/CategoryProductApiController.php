@@ -60,6 +60,27 @@ class CategoryProductApiController extends Controller
         return $this->responseJson(404, "Tidak Ada Daftar Paginasi Kategori Produk");
     }
 
+    public function getTrashedCategories() {
+        $trashedCategory = CategoryProduct::onlyTrashed()->select("id", "name", "isActive")->get();
+
+        if ($trashedCategory->isNotEmpty()) {
+            return $this->responseJson($trashedCategory, 200, "Berhasil Mengambil Daftar Kategori (Trashed)");
+        }
+
+        return $this->responseJson(404, "Tidak Ada Daftar Category (Trashed)");
+    }
+
+    public function restoreTrashedCategory($categoryId) {
+        $category = CategoryProduct::onlyTrashed()->findOrFail($categoryId);
+        $category->restore();
+
+        $restoredCategory = CategoryProduct::select("id", "name", "isActive")->findOrFail($categoryId);
+
+        return $this->responseJson([
+            'restoredCategory' => $restoredCategory
+        ], 200, "Berhasil Restore Data Category");
+    }
+
     public function editCategory(CategoryProductRequest $request, $categoryId) {
         DB::beginTransaction();
         try {
@@ -99,6 +120,9 @@ class CategoryProductApiController extends Controller
 
     public function deleteCategory($categoryId) { 
         $doDelete = CategoryProduct::whereId($categoryId)->delete();
-        return $this->responseJson(200, "Category Product Berhasil Dihapus");
+        $trashedCategory = CategoryProduct::onlyTrashed()->select("id", "name", "isActive")->findOrFail($categoryId);
+        return $this->responseJson([
+            'trashedCategory' => $trashedCategory
+        ], 200, "Category Product Berhasil Dihapus");
     }
 }

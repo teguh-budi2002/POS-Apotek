@@ -16,6 +16,7 @@ import Card from "primevue/card";
 import Image from "primevue/image";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
+import Tooltip from 'primevue/tooltip';
 
 import "primeicons/primeicons.css";
 
@@ -41,6 +42,7 @@ app.component("Card", Card);
 app.component("Image", Image);
 app.component("DataTable", DataTable);
 app.component("Column", Column);
+app.directive('tooltip', Tooltip)
 app.use(ToastService);
 app.use(pinia);
 app.use(router);

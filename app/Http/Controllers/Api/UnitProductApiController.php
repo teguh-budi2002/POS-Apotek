@@ -48,10 +48,31 @@ class UnitProductApiController extends Controller
             return $this->responseJson([
                 'units' => $units, 
                 'total' => $units->total()
-            ], 200, "Berhasil Mengambil Daftar Paginasi Unit Produk");
+            ], 200, "Berhasil Mengambil Daftar Paginasi Satuan Produk");
         }
 
-        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Kategori Produk");
+        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Satuan Produk");
+    }
+
+    public function getTrashedUnits() {
+        $trashedUnit = UnitProduct::onlyTrashed()->select("id", "name", "isActive")->get();
+
+        if ($trashedUnit->isNotEmpty()) {
+            return $this->responseJson($trashedUnit, 200, "Berhasil Mengambil Daftar Unit (Trashed)");
+        }
+
+        return $this->responseJson(404, "Tidak Ada Daftar Unit (Trashed)");
+    }
+
+    public function restoreTrashedUnit($unitId) {
+        $unit = UnitProduct::onlyTrashed()->findOrFail($unitId);
+        $unit->restore();
+
+        $restoredUnit = UnitProduct::select("id", "name", "isActive")->findOrFail($unitId);
+
+        return $this->responseJson([
+            'restoredUnit' => $restoredUnit
+        ], 200, "Berhasil Restore Data Unit");
     }
 
     public function editUnit(UnitProductRequest $request, $unitId) {
@@ -93,6 +114,9 @@ class UnitProductApiController extends Controller
 
     public function deleteUnit($unitId) { 
         $doDelete = UnitProduct::whereId($unitId)->delete();
-        return $this->responseJson(200, "Satuan Produk Berhasil Dihapus");
+        $trashedUnit = UnitProduct::onlyTrashed()->select("id", "name", "isActive")->findOrFail($unitId);
+        return $this->responseJson([
+            'trashedUnit' => $trashedUnit
+        ], 200, "Satuan Produk Berhasil Dihapus");
     }
 }
