@@ -3,7 +3,7 @@ import { getToken } from "../helpers/getToken";
 
 async function getCSRFToken() {
     try {
-        const response = await axios.get("/sanctum/csrf-token");
+        const response = await axios.get("/sanctum/csrf-cookie");
         const csrfToken = response.data.csrf_token;
 
         axios.defaults.headers.common["X-CSRF-TOKEN"] = csrfToken;
@@ -24,14 +24,15 @@ const apiServices = axios.create({
 });
 
 apiServices.interceptors.request.use(async function (config) {
-    const csrfToken = await getCSRFToken();
+    await getCSRFToken();
     const authToken = getToken;
-    config.headers["X-CSRF-TOKEN"] = csrfToken;
 
     if (authToken) {
         config.headers.Authorization = `Bearer ${authToken}`;
     }
     return config;
+}, function (error) {
+    return Promise.reject(error);
 });
 
 export default apiServices;
