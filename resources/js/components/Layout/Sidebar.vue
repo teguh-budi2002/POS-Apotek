@@ -23,7 +23,7 @@
             </p>
         </div>
         <div
-            class="mb-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            class="mb-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150 overflow-x-hidden"
              :class="[$route.name === 'dashboard' ? 'bg-slate-700/90' : '']"
         >
             <router-link
@@ -63,7 +63,7 @@
         </p>
         <!-- Single Menu -->
         <div
-            class="mt-3 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            class="mt-3 rounded-md group hover:bg-slate-700/90 transition-colors duration-150 overflow-x-hidden"
             :class="[$route.name === 'product' ? 'bg-slate-700/90' : '']"
         >
             <router-link
@@ -92,7 +92,7 @@
             </router-link>
         </div>
         <div
-            class="mt-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            class="mt-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150 overflow-x-hidden"
             :class="[$route.name === 'category' ? 'bg-slate-700/90' : '']"
         >
             <router-link
@@ -121,7 +121,7 @@
             </router-link>
         </div>
         <div
-            class="mt-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150"
+            class="mt-1 rounded-md group hover:bg-slate-700/90 transition-colors duration-150 overflow-x-hidden"
             :class="[$route.name === 'unit' ? 'bg-slate-700/90' : '']"
         >
             <router-link
