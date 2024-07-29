@@ -21,7 +21,7 @@ class ApotekRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             "name_of_apotek" => "required",
             "email" => "required|email:dns",
             "contact_phone" => "required|numeric|regex:/^62[0-9]+$/|max_digits:14",
@@ -31,6 +31,19 @@ class ApotekRequest extends BaseFormRequest
             "address" => "required",
             "bio" => "required"
         ];
+
+        if (in_array($this->method(), ['PUT', 'PATCH'])) {
+            $rules['name_of_apotek'] = 'nullable';
+            $rules['email'] = 'nullable|email:dns';
+            $rules['contact_phone'] = 'nullable|numeric|regex:/^62[0-9]+$/|max_digits:14';
+            $rules['city'] = 'nullable';
+            $rules['province'] = 'nullable';
+            $rules['zip_code'] = 'nullable|numeric';
+            $rules['address'] = 'nullable';
+            $rules['bio'] = 'nullable';
+        }
+
+        return $rules;
     }
 
     public function messages()

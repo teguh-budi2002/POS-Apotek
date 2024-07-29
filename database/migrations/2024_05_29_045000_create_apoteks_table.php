@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('address');
             $table->text('bio');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -18,6 +18,9 @@ Route::post('login/process',[LoginApiController::class, 'loginProcess']);
 
 Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ApotekApiController::class, 'getAllApotek']);
+  Route::get('/pagination', [ApotekApiController::class, 'getPaginateApoteks']);
+  Route::get('/trashed', [ApotekApiController::class, 'getTrashedApoteks']);
+  Route::post('restore-apotek/{id}', [ApotekApiController::class, 'restoreTrashedApotek']);
   Route::post('add-apotek',[ApotekApiController::class, 'addApotek']);
   Route::patch('edit-apotek/{id}',[ApotekApiController::class, 'editApotek']);
   Route::delete('delete-apotek/{id}',[ApotekApiController::class, 'deleteApotek']);

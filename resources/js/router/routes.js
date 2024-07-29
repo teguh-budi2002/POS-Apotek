@@ -9,6 +9,11 @@ const routes = [
         meta: { requiresAuth: true },
         children: [
             {
+                path: "apotek",
+                name: "apotek",
+                component: () => import("../views/apoteks/Apotek.vue"),
+            },
+            {
                 path: "produk",
                 name: "product",
                 component: () => import("../views/products/Product.vue"),
