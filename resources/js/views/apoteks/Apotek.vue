@@ -414,10 +414,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import Content from "../../components/Layout/Content.vue";
 import InputText from "primevue/inputtext";
 import InputNumber from "primevue/inputnumber";
-import InputGroup from "primevue/inputgroup";
-import InputGroupAddon from "primevue/inputgroupaddon";
 import Textarea from "primevue/textarea";
-import FileUpload from "primevue/fileupload";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import ContextMenu from "primevue/contextmenu";
@@ -434,14 +431,11 @@ export default {
         Content,
         InputText,
         InputNumber,
-        InputGroup,
-        InputGroupAddon,
         IconField,
         InputIcon,
         ContextMenu,
         Drawer,
         Textarea,
-        FileUpload,
     },
     setup() {
         const apotekStore = useApotekStore();
