@@ -1,5 +1,6 @@
 <template>
     <div>
+        <Toast />
         <Button
             type="button"
             label="Logout"
@@ -46,16 +47,28 @@
 <script>
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import { useToast } from "primevue/usetoast";
 import { ref } from "vue";
 export default {
     setup() {
         const authStore = useAuthStore();
         const router = useRouter();
         const visibleLogoutModal = ref(false);
+        const toast = useToast()
 
-        const logout = () => {
-            authStore.logout();
-            router.replace({ path: "/login", query: { isLogout: true } });
+        const logout = async () => {
+            await authStore.logout();
+            
+            if (!authStore.isError) {
+                router.replace({ path: "/login", query: { isLogout: true } });
+            } else {
+                toast.add({
+                    severity: "error",
+                    summary: "Logout Gagal",
+                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+                    life: 3000,
+                })
+            }
         };
 
         return { logout, visibleLogoutModal };

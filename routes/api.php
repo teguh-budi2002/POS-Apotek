@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ApotekApiController;
 use App\Http\Controllers\Api\Auth\LoginApiController;
+use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterApiController;
 use App\Http\Controllers\Api\CategoryProductApiController;
 use App\Http\Controllers\Api\CustomerApiController;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('register/process',[RegisterApiController::class, 'registerProcess']);
 Route::post('login/process',[LoginApiController::class, 'loginProcess']);
+Route::post('logout',[LogoutController::class, 'logout']);
 
 Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ApotekApiController::class, 'getAllApotek']);

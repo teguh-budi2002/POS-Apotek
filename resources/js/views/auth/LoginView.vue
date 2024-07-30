@@ -82,13 +82,6 @@
                     </div>
                 </div>
             </div>
-            <div class="w-fit lg:block hidden">
-                <img
-                    :src="'assets/images/bg-login.jpg'"
-                    alt="bg-login"
-                    class="w-full h-full rounded-r-md"
-                />
-            </div>
         </div>
     </div>
 </template>
@@ -99,7 +92,7 @@ import { useToast } from "primevue/usetoast";
 import { useForm } from "vee-validate";
 import * as Yup from "yup";
 import { useRouter, useRoute } from "vue-router";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 export default {
     setup() {
@@ -108,6 +101,13 @@ export default {
         const authStore = useAuthStore();
         const router = useRouter();
         const route = useRoute();
+
+        onMounted(() => {
+            if (route.query.isLogout) {
+                showToastLogout()
+                router.replace({ query: '' })
+            }
+        })
 
         if (localStorage.getItem("checkAuth") === "userNotAuthenticated") {
             visible.value = true;
@@ -146,7 +146,7 @@ export default {
             }
         });
 
-        if (route.query.isLogout) {
+        const showToastLogout = () => {
             toast.add({
                 severity: "error",
                 summary: "Logout",
@@ -166,6 +166,7 @@ export default {
             authStore,
             visible,
             handleCloseAuthInfoModal,
+            showToastLogout
         };
     },
 };

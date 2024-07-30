@@ -45,11 +45,22 @@ export const useAuthStore = defineStore("authStore", {
                 }
             }
         },
-        logout() {
-            Cookies.remove("token");
-            Cookies.remove("user");
+        async logout() {
+            try {
+                const response = await apiServices.post('logout')
+    
+                if (response.data.status_code === 200) {
+                    this.isError = false
 
-            this.isAuth = false;
+                    Cookies.remove("token");
+                    Cookies.remove("user");
+        
+                    this.isAuth = false;
+                }
+            } catch (error) {
+                this.isError = true
+                console.log(error, "Logout Error");
+            }
         },
     },
 });

@@ -25,7 +25,7 @@ const apiServices = axios.create({
 
 apiServices.interceptors.request.use(async function (config) {
     await getCSRFToken();
-    const authToken = getToken;
+    const authToken = getToken()
 
     if (authToken) {
         config.headers.Authorization = `Bearer ${authToken}`;
