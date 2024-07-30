@@ -14,6 +14,11 @@ const routes = [
                 component: () => import("../views/apoteks/Apotek.vue"),
             },
             {
+                path: "pelanggan",
+                name: "customer",
+                component: () => import("../views/customer/Customer.vue"),
+            },
+            {
                 path: "produk",
                 name: "product",
                 component: () => import("../views/products/Product.vue"),

@@ -93,6 +93,35 @@
         </div>
         <div
             class="mt-3 rounded-md group hover:bg-slate-700/90 transition-colors duration-150 overflow-x-hidden"
+            :class="[$route.name === 'customer' ? 'bg-slate-700/90' : '']"
+        >
+            <router-link
+                :to="{ name: 'customer' }"
+                class="p-3 flex items-center transition-all duration-200"
+                :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
+            >
+                <i
+                    class="fas fa-user-shield fa-lg group-hover:text-emerald-300 transition-colors duration-200"
+                    :class="[$route.name === 'customer' ? 'text-emerald-300' : 'text-emerald-400']"
+                ></i>
+                <div
+                    :class="[
+                        isSidebarExpanded
+                            ? 'opacity-100 delay-500 transition-all duration-100'
+                            : 'opacity-0 transition-all duration-100',
+                    ]"
+                >
+                    <span
+                        class="group-hover:text-gray-100 ml-3 transition-color duration-200"
+                        :class="[$route.name === 'customer' ? 'text-gray-300' : 'text-gray-400']"
+                    >
+                        Customer
+                    </span>
+                </div>
+            </router-link>
+        </div>
+        <div
+            class="mt-3 rounded-md group hover:bg-slate-700/90 transition-colors duration-150 overflow-x-hidden"
             :class="[$route.name === 'product' ? 'bg-slate-700/90' : '']"
         >
             <router-link

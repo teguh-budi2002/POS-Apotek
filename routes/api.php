@@ -37,6 +37,9 @@ Route::prefix('supplier')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('customer')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [CustomerApiController::class, 'getAllCustomer']);
+  Route::get('/pagination', [CustomerApiController::class, 'getPaginateCustomers']);
+  Route::get('/trashed', [CustomerApiController::class, 'getTrashedCustomers']);
+  Route::post('restore-customer/{id}', [CustomerApiController::class, 'restoreTrashedCustomer']);
   Route::post('add-customer',[CustomerApiController::class, 'addCustomer']);
   Route::patch('edit-customer/{id}',[CustomerApiController::class, 'editCustomer']);
   Route::delete('delete-customer/{id}',[CustomerApiController::class, 'deleteCustomer']);

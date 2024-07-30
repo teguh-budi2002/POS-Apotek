@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('gender', ['L', 'P']);
             $table->tinyText('address');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::table('sales_products', function(Blueprint $table) {
