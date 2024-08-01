@@ -643,7 +643,7 @@ export default {
         const showDialogDetailProduct = ref(false);
         const showDialogDeleteProduct = ref(false);
         const dataTable = ref([]);
-        const searchQuery = ref('')
+        const searchQuery = ref(productStore.filters.search || '')
         const cm = ref();
         const expandedRows = ref({});
         const loading = ref(false);
@@ -663,6 +663,7 @@ export default {
         const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
 
         onMounted(async () => {
+            searchQuery.value = productStore.filters.search || '';
             await loadProducts();
             await loadCategoryProduct();
             await loadUnitProduct();
@@ -688,6 +689,7 @@ export default {
 
         const clearFilter = () => {
             searchQuery.value = ''
+            productStore.filters.search = ''
         };
 
         const onPage = (e) => {

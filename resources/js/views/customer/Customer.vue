@@ -360,7 +360,7 @@ export default {
         const showTrashedCustomerDialog = ref(false)
         const toast = useToast();
         const dataTable = ref([]);
-        const searchQuery = ref('')
+        const searchQuery = ref(customerStore.filters.search || '')
         const cm = ref();
         const expandedRows = ref({});
         const loading = ref(false);
@@ -377,6 +377,7 @@ export default {
         const isMounted = ref(false);
 
         onMounted(async () => {
+            searchQuery.value = customerStore.filters.search || ''
             await loadCustomers();
             await loadTrashedCustomers();
             isMounted.value = true;

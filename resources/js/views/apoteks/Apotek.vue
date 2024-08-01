@@ -446,7 +446,7 @@ export default {
         const showTrashedApotekDialog = ref(false)
         const toast = useToast();
         const dataTable = ref([]);
-        const searchQuery = ref('')
+        const searchQuery = ref(apotekStore.filters.search || '')
         const cm = ref();
         const expandedRows = ref({});
         const loading = ref(false);
@@ -466,6 +466,7 @@ export default {
         const isMounted = ref(false);
 
         onMounted(async () => {
+            searchQuery.value = apotekStore.filters.search || ''
             await loadApoteks();
             await loadTrashedApoteks();
             isMounted.value = true;

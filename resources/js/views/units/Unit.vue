@@ -296,7 +296,7 @@ export default {
         const showTrashedUnitDialog = ref(false)
         const toast = useToast();
         const dataTable = ref([]);
-        const searchQuery = ref('')
+        const searchQuery = ref(unitStore.filters.search || '')
         const cm = ref();
         const expandedRows = ref({});
         const loading = ref(false);
@@ -310,6 +310,7 @@ export default {
         const isMounted = ref(false);
 
         onMounted(async () => {
+            searchQuery.value = unitStore.filters.search || ''
             await loadUnits();
             await loadTrashedUnits();
             isMounted.value = true;

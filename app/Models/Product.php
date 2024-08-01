@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -45,5 +47,17 @@ class Product extends Model
                     ->as('saled_product')
                     ->withPivot('qty')
                     ->withTimestamps();
+    }
+
+    public function scopeFilterProducts($query, $filter) {
+        $query->when($filter ?? false, function($query, $filter) {
+            return $query->where(function($query) use($filter) {
+                            $query->where('product_code', 'like', $filter . '%')
+                                    ->orWhere('name', 'like', $filter . '%');  
+                        })
+                        ->orWhereRaw('MATCH(description) AGAINST (? IN NATURAL LANGUAGE MODE)', [$filter])
+                        ->orderByDesc("name");
+
+        });
     }
 }

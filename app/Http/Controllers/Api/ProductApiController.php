@@ -57,22 +57,13 @@ class ProductApiController extends Controller
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
         $query = Product::with($this->getRelation);
-
-        if ($request->has('search')) {
-            $query->where('product_code', 'like', '%' . $request->search . '%')
-                  ->orWhere('name', 'like', '%' . $request->search . '%');
-        }
+        $query->filterProducts($request->search);
 
         $products = $query->paginate($perPage, ['*'], 'page', $page);
 
-        if ($products->isNotEmpty()) {
-            return $this->responseJson([
-                'products' => $products, 
-                'total' => $products->total()
-            ], 200, "Berhasil Mengambil Daftar Produk");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Produk");
+        return $products->isNotEmpty() 
+                ? $this->responseJson(['products' => $products, 'total' => $products->total()], 200, "Berhasil Mengambil Daftar Produk") 
+                : $this->responseJson(404, "Tidak Ada Daftar Produk");
     }
 
     public function editProduct(ProductRequest $request, Product $product) {

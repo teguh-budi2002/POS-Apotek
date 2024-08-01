@@ -296,7 +296,7 @@ export default {
         const selectedIsActiveOption = ref(1)
         const toast = useToast();
         const dataTable = ref([]);
-        const searchQuery = ref('')
+        const searchQuery = ref(categoryStore.filters.search || '')
         const cm = ref();
         const expandedRows = ref({});
         const loading = ref(false);
@@ -309,6 +309,7 @@ export default {
         const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
 
         onMounted(async () => {
+            searchQuery.value = categoryStore.filters.search || ''
             await loadCategories();
             await loadTrashedCategories();
         });
