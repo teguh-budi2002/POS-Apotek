@@ -531,15 +531,15 @@ export default {
             loading.value = false;
         };
 
-        const restoreCategory = async (unitId) => {
+        const restoreCategory = async (categoryId) => {
             loading.value = true;
-            await categoryStore.restoreCategory(unitId)
+            await categoryStore.restoreCategory(categoryId)
 
             if (categoryStore.errorAddedData) {
                 toast.add({
                     severity: "error",
                     life: 3000,
-                    summary: "Restore Unit Failed",
+                    summary: "Restore Category Failed",
                     detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
                 });
             } else {
@@ -547,8 +547,8 @@ export default {
                 toast.add({
                     severity: "success",
                     life: 3000,
-                    summary: "Restore Unit Successfully",
-                    detail: "Satuan Berhasil Di Pulihkan",
+                    summary: "Restore Category Successfully",
+                    detail: "Kategori Berhasil Di Pulihkan",
                 });
             }
             loading.value = false;

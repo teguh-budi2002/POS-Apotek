@@ -20,4 +20,11 @@ class Apotek extends Model
         'address',
         'bio'
     ];
+
+    public function scopeFilterApotek($query, $filter) {
+        return $query->when($filter ?? false, function($query, $filter) {
+            return $query->where('name_of_apotek', 'like', '%' . $filter . '%')
+                         ->orderByDesc("name_of_apotek");
+        });
+    }
 }

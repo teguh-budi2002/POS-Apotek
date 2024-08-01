@@ -10,12 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 class CategoryProductApiController extends Controller
 {
+    private $query;
+
+    public function __construct() {
+         $this->query = CategoryProduct::select(
+            'id',
+            'name',
+            'isActive'
+         )
+         ->newQuery();
+    }
+
     public function createCategory(CategoryProductRequest $request) {
         DB::beginTransaction();
         try {
             $validation = $request->validated();
             $createCategory = CategoryProduct::create($validation);
-            $addedCategory = CategoryProduct::select("id", "name", "isActive")->findOrFail($createCategory->id);
+            $addedCategory = $this->query->findOrFail($createCategory->id);
             DB::commit();
             
             return $this->responseJson($addedCategory, 201, "Category Product Berhasil Dibuat");
@@ -26,55 +37,39 @@ class CategoryProductApiController extends Controller
     }
 
     public function getCategories() {
-        $categories = CategoryProduct::select("id", "name", "isActive")
-                                     ->where('isActive', 1)
-                                     ->get();
+        $categories = $this->query->isActive()->get();
 
-        if ($categories->isNotEmpty()) {
-            return $this->responseJson([
-                'categories' => $categories, 
-            ], 200, "Berhasil Mengambil Daftar Kategori Produk");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Kategori Produk");
+        return $categories->isNotEmpty()
+            ? $this->responseJson(['categories' => $categories], 200, "Berhasil Mengambil Daftar Kategori Produk")
+            : $this->responseJson(404, "Tidak Ada Daftar Kategori Produk");
     }
 
     public function getPaginateCategories(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
-        $query = CategoryProduct::query();
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $this->query->filterCategory($request->search);
 
-        $categories = $query->paginate($perPage, ['*'], 'page', $page);
+        $categories = $this->query->paginate($perPage, ['*'], 'page', $page);
 
-        if ($categories->isNotEmpty()) {
-            return $this->responseJson([
-                'categories' => $categories, 
-                'total' => $categories->total()
-            ], 200, "Berhasil Mengambil Daftar Paginasi Kategori Produk");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Kategori Produk");
+        return $categories->isNotEmpty()
+            ? $this->responseJson(['categories' => $categories, 'total' => $categories->total()], 200, "Berhasil Mengambil Daftar Paginasi Kategori Produk")
+            : $this->responseJson(404, "Tidak Ada Daftar Paginasi Kategori Produk");
     }
 
     public function getTrashedCategories() {
-        $trashedCategory = CategoryProduct::onlyTrashed()->select("id", "name", "isActive")->get();
+        $trashedCategory = $this->query->onlyTrashed()->get();
 
-        if ($trashedCategory->isNotEmpty()) {
-            return $this->responseJson($trashedCategory, 200, "Berhasil Mengambil Daftar Kategori (Trashed)");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Category (Trashed)");
+        return $trashedCategory->isNotEmpty()
+            ? $this->responseJson($trashedCategory, 200, "Berhasil Mengambil Daftar Kategori (Trashed)")
+            : $this->responseJson(404, "Tidak Ada Daftar Kategori (Trashed)");
     }
 
     public function restoreTrashedCategory($categoryId) {
         $category = CategoryProduct::onlyTrashed()->findOrFail($categoryId);
         $category->restore();
 
-        $restoredCategory = CategoryProduct::select("id", "name", "isActive")->findOrFail($categoryId);
+        $restoredCategory = $this->query->findOrFail($categoryId);
 
         return $this->responseJson([
             'restoredCategory' => $restoredCategory
@@ -88,7 +83,7 @@ class CategoryProductApiController extends Controller
             CategoryProduct::whereId($categoryId)->update($validation);
             DB::commit();
 
-            $newUpdatedData = CategoryProduct::whereId($categoryId)->firstOrFail();
+            $newUpdatedData = $this->query->findOrFail($categoryId);
 
             return $this->responseJson([
                 'newUpdatedCategory' => $newUpdatedData
@@ -107,7 +102,7 @@ class CategoryProductApiController extends Controller
             ]);
             DB::commit();
 
-            $newUpdatedData = CategoryProduct::whereId($categoryId)->firstOrFail();
+            $newUpdatedData = $this->query->findOrFail($categoryId);
 
             return $this->responseJson([
                 'newUpdatedCategory' => $newUpdatedData
@@ -118,11 +113,19 @@ class CategoryProductApiController extends Controller
         }
     }
 
-    public function deleteCategory($categoryId) { 
-        $doDelete = CategoryProduct::whereId($categoryId)->delete();
-        $trashedCategory = CategoryProduct::onlyTrashed()->select("id", "name", "isActive")->findOrFail($categoryId);
-        return $this->responseJson([
-            'trashedCategory' => $trashedCategory
-        ], 200, "Category Product Berhasil Dihapus");
+    public function deleteCategory($categoryId) {
+        DB::beginTransaction();
+        try {
+            CategoryProduct::whereId($categoryId)->delete();
+            DB::commit();
+            $trashedCategory = $this->query->onlyTrashed()->findOrFail($categoryId);
+
+            return $this->responseJson([
+                'trashedCategory' => $trashedCategory
+            ], 200, "Category Product Berhasil Dihapus");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->responseJson(500, $th->getMessage());
+        }
     }
 }

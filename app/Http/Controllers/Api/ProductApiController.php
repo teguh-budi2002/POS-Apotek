@@ -13,20 +13,32 @@ class ProductApiController extends Controller
 {
     private $img_name = '';
     private $getRelation;
+    private $query;
 
     public function __construct()
     {
-        $this->getRelation = [
-                'category' => function($q) {
-                    $q->select("id", "name", "isActive")->where('isActive', 1);
-                },
-                'unit' => function($q) {
-                    $q->select("id", "name", "isActive")->where('isActive', 1);
-                },
-                'stock' => function($q) {
-                    $q->select("id", "product_id", "stock", "minimum_stock_level", "maximum_stock_level");
-                }
-            ];
+        $this->query = Product::select(
+            'id',
+            'category_product_id',
+            'unit_product_id',
+            'product_code',
+            'name',
+            'unit_price',
+            'description',
+            'img_product',
+            'isActive'  
+        )->with([
+            'category' => function($q) {
+                $q->select("id", "name", "isActive")->isActive();
+            },
+            'unit' => function($q) {
+                $q->select("id", "name", "isActive")->isActive();
+            },
+            'stock' => function($q) {
+                $q->select("id", "product_id", "stock", "minimum_stock_level", "maximum_stock_level");
+            }
+        ])
+        ->newQuery();
     }
 
     public function addProduct(ProductRequest $request) {
@@ -43,7 +55,7 @@ class ProductApiController extends Controller
             $productCreated = Product::create($validation);
             $productId = $productCreated->id;
 
-            $addedProduct = Product::with($this->getRelation)->findOrFail($productId);
+            $addedProduct = $this->query->findOrFail($productId);
             DB::commit();
             
             return $this->responseJson($addedProduct, 201, "Produk Berhasil Ditambah");
@@ -56,10 +68,10 @@ class ProductApiController extends Controller
     public function getProducts(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
-        $query = Product::with($this->getRelation);
-        $query->filterProducts($request->search);
+    
+        $this->query->filterProduct($request->search);
 
-        $products = $query->paginate($perPage, ['*'], 'page', $page);
+        $products = $this->query->paginate($perPage, ['*'], 'page', $page);
 
         return $products->isNotEmpty() 
                 ? $this->responseJson(['products' => $products, 'total' => $products->total()], 200, "Berhasil Mengambil Daftar Produk") 
@@ -84,7 +96,7 @@ class ProductApiController extends Controller
             Product::whereId($product->id)->update($validation);
             DB::commit();
             
-            $newUpdatedData = Product::with($this->getRelation)->whereId($product->id)->firstOrFail();
+            $newUpdatedData = $this->query->findOrFail($product->id);
 
             return $this->responseJson(['newUpdatedProduct' => $newUpdatedData], 200, "Produk Berhasil Diedit");
         } catch (\Throwable $th) {
@@ -101,7 +113,7 @@ class ProductApiController extends Controller
             ]);
             DB::commit();
 
-            $newUpdatedData = Product::with($this->getRelation)->whereId($productId)->firstOrFail();
+            $newUpdatedData = $this->query->findOrFail($productId);
 
             return $this->responseJson([
                 'newUpdatedProduct' => $newUpdatedData
@@ -115,10 +127,10 @@ class ProductApiController extends Controller
     public function deleteProduct($id) {
         DB::beginTransaction();
         try {
-            $product = Product::whereId($id)->first();
+            $product = Product::findOrFail($id);
             $deleteOldImage = Storage::delete('/public/product/' . $product->img_product);
-            DB::commit();
             $product->delete();
+            DB::commit();
     
             return $this->responseJson(200, "Product Berhasil Dihapus");
         } catch (\Throwable $th) {

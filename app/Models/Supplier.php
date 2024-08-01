@@ -20,4 +20,11 @@ class Supplier extends Model
         'address',
         'description'
     ];
+
+    public function scopeFilterSupplier($query, $filter) {
+        return $query->when($filter ?? false, function($query, $filter) {
+            return $query->where('supplier_name', 'like', '%' . $filter . '%')
+                         ->orderByDesc("supplier_name");
+        });
+    }
 }

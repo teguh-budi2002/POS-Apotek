@@ -14,7 +14,17 @@ class ApotekApiController extends Controller
 
     public function __construct()
     {
-        $this->query = Apotek::select("id", "name_of_apotek", "email", "contact_phone", "city", "province", "zip_code", "address", "bio")->newQuery();
+        $this->query = Apotek::select(
+            'id',
+            'name_of_apotek',
+            'email',
+            'contact_phone',
+            'city',
+            'province',
+            'zip_code',
+            'address',
+            'bio'
+        )->newQuery();
     }
 
     public function addApotek(ApotekRequest $request) {
@@ -34,41 +44,31 @@ class ApotekApiController extends Controller
 
      public function getAllApotek() {
         $apoteks = $this->query->get();
-        if ($apoteks->isNotEmpty()) {
-            return $this->responseJson($apoteks, 200, "Berhasil Mengambil Daftar Apotek");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Apotek");
+ 
+        return $apoteks->isNotEmpty()
+            ? $this->responseJson($apoteks, 200, "Berhasil Mengambil Daftar Apotek")
+            : $this->responseJson(404, "Tidak Ada Daftar Apotek");
     }
 
     public function getPaginateApoteks(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
 
-        if ($request->has('search')) {
-            $this->query->where('name_of_apotek', 'like', '%' . $request->search . '%');
-        }
+        $this->query->filterApotek($request->search);
 
         $apoteks = $this->query->paginate($perPage, ['*'], 'page', $page);
 
-        if ($apoteks->isNotEmpty()) {
-            return $this->responseJson([
-                'apoteks' => $apoteks, 
-                'total' => $apoteks->total()
-            ], 200, "Berhasil Mengambil Daftar Paginasi Apotek");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Apotek");
+        return $apoteks->isNotEmpty() 
+            ? $this->responseJson(['apoteks' => $apoteks, 'total' => $apoteks->total()], 200, "Berhasil Mengambil Daftar Paginasi Apotek")
+            : $this->responseJson(404, "Tidak Ada Daftar Paginasi Apotek");
     }
 
     public function getTrashedApoteks() {
         $trashedApotek = $this->query->onlyTrashed()->get();
 
-        if ($trashedApotek->isNotEmpty()) {
-            return $this->responseJson($trashedApotek, 200, "Berhasil Mengambil Daftar Apotek (Trashed)");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Apotek (Trashed)");
+        return $trashedApotek->isNotEmpty()
+            ? $this->responseJson($trashedApotek, 200, "Berhasil Mengambil Daftar Apotek (Trashed)")
+            : $this->responseJson(404, "Tidak Ada Daftar Apotek (Trashed)");
     }
 
     public function restoreTrashedApotek($apotekId) {

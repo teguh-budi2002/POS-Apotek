@@ -14,7 +14,17 @@ class SupplierApiController extends Controller
 
     public function __construct()
     {
-        $this->query = Supplier::select("id", "supplier_name", "email", "contact_phone", "city", "province", "zip_code", "address", "description")->newQuery();
+        $this->query = Supplier::select(
+            "id", 
+            "supplier_name", 
+            "email", 
+            "contact_phone", 
+            "city", 
+            "province", 
+            "zip_code", 
+            "address", 
+            "description"
+        )->newQuery();
     }
 
     public function addSupplier(SupplierRequest $request) {
@@ -34,20 +44,17 @@ class SupplierApiController extends Controller
 
      public function getAllSupplier() {
         $suppliers = Supplier::get();
-        if ($suppliers->isNotEmpty()) {
-            return $this->responseJson($suppliers, 200, "Berhasil Mengambil Daftar Supplier");
-        }
 
-        return $this->responseJson(404, "Tidak Ada Daftar Supplier");
+        return $suppliers->isNotEmpty()
+            ? $this->responseJson($suppliers, 200, "Berhasil Mengambil Daftar Supplier")
+            : $this->responseJson(404, "Tidak Ada Daftar Supplier");
     }
 
      public function getPaginateSuppliers(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
 
-        if ($request->has('search')) {
-            $this->query->where('supplier_name', 'like', '%' . $request->search . '%');
-        }
+        $this->query->filterSupplier($request->search);
 
         $suppliers = $this->query->paginate($perPage, ['*'], 'page', $page);
 

@@ -10,12 +10,22 @@ use Illuminate\Support\Facades\DB;
 
 class UnitProductApiController extends Controller
 {
-     public function createUnit(UnitProductRequest $request) {
+    private $query;
+
+    public function __construct()
+    {
+        $this->query = UnitProduct::select(
+            "id", 
+            "name", 
+            "isActive"
+        )->newQuery();
+    }
+    public function createUnit(UnitProductRequest $request) {
         DB::beginTransaction();
         try {
             $validation = $request->validated();
             $createUnit =  UnitProduct::create($validation);
-            $addedUnit = UnitProduct::select("id", "name", "isActive")->findOrFail($createUnit->id);
+            $addedUnit = $this->query->findOrFail($createUnit->id);
             DB::commit();
             
             return $this->responseJson($addedUnit, 201, "Satuan Produk Berhasil Dibuat");
@@ -26,49 +36,39 @@ class UnitProductApiController extends Controller
     }
 
     public function getUnits() {
-        $unit = UnitProduct::select("id", "name", "isActive")->get();
-        if ($unit->isNotEmpty()) {
-            return $this->responseJson($unit, 200, "Berhasil Mengambil Daftar Satuan Produk");
-        }
-        return $this->responseJson(404, "Tidak Ada Daftar Satuan Produk");
+        $units = $this->query->isActive()->get();
+   
+        return $units->isNotEmpty()
+            ? $this->responseJson($units, 200, "Berhasil Mengambil Daftar Satuan Produk")
+            : $this->responseJson(404, "Tidak Ada Daftar Satuan Produk");
     }
 
     public function getPaginateUnits(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
-        $query = UnitProduct::query();
+        
+        $this->query->filterUnit($request->search);
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $units = $this->query->paginate($perPage, ['*'], 'page', $page);
 
-        $units = $query->paginate($perPage, ['*'], 'page', $page);
-
-        if ($units->isNotEmpty()) {
-            return $this->responseJson([
-                'units' => $units, 
-                'total' => $units->total()
-            ], 200, "Berhasil Mengambil Daftar Paginasi Satuan Produk");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Satuan Produk");
+        return $units->isNotEmpty()
+            ? $this->responseJson(['units' => $units, 'total' => $units->total()], 200, "Berhasil Mengambil Daftar Paginasi Satuan Produk")
+            : $this->responseJson(404, "Tidak Ada Daftar Paginasi Satuan Produk");
     }
 
     public function getTrashedUnits() {
-        $trashedUnit = UnitProduct::onlyTrashed()->select("id", "name", "isActive")->get();
+        $trashedUnit = $this->query->onlyTrashed()->get();
 
-        if ($trashedUnit->isNotEmpty()) {
-            return $this->responseJson($trashedUnit, 200, "Berhasil Mengambil Daftar Unit (Trashed)");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Unit (Trashed)");
+        return $trashedUnit->isNotEmpty()
+            ? $this->responseJson($trashedUnit, 200, "Berhasil Mengambil Daftar Unit (Trashed)")
+            : $this->responseJson(404, "Tidak Ada Daftar Unit (Trashed)");
     }
 
     public function restoreTrashedUnit($unitId) {
         $unit = UnitProduct::onlyTrashed()->findOrFail($unitId);
         $unit->restore();
 
-        $restoredUnit = UnitProduct::select("id", "name", "isActive")->findOrFail($unitId);
+        $restoredUnit = $this->query->findOrFail($unitId);
 
         return $this->responseJson([
             'restoredUnit' => $restoredUnit
@@ -82,7 +82,7 @@ class UnitProductApiController extends Controller
             $doUpdate = UnitProduct::whereId($unitId)->update($validation);
             DB::commit();
 
-            $newUpdatedData = UnitProduct::whereId($unitId)->firstOrFail();
+            $newUpdatedData = $this->query->findOrFail($unitId);
 
             return $this->responseJson([
                 'newUpdatedUnit' => $newUpdatedData
@@ -101,7 +101,7 @@ class UnitProductApiController extends Controller
             ]);
             DB::commit();
 
-            $newUpdatedData = UnitProduct::whereId($unitId)->firstOrFail();
+            $newUpdatedData = $this->query->findOrFail($unitId);
 
             return $this->responseJson([
                 'newUpdatedUnit' => $newUpdatedData
@@ -113,10 +113,19 @@ class UnitProductApiController extends Controller
     }
 
     public function deleteUnit($unitId) { 
-        $doDelete = UnitProduct::whereId($unitId)->delete();
-        $trashedUnit = UnitProduct::onlyTrashed()->select("id", "name", "isActive")->findOrFail($unitId);
-        return $this->responseJson([
-            'trashedUnit' => $trashedUnit
-        ], 200, "Satuan Produk Berhasil Dihapus");
+        DB::beginTransaction();
+        try {
+            UnitProduct::whereId($unitId)->delete();
+            DB::commit();
+            $trashedUnit = $this->query->onlyTrashed()->findOrFail($unitId);
+            
+            return $this->responseJson([
+                'trashedUnit' => $trashedUnit
+            ], 200, "Satuan Produk Berhasil Dihapus");
+            
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->responseJson(500, $th->getMessage());
+        }
     }
 }

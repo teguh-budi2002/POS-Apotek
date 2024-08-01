@@ -13,7 +13,13 @@ class CustomerApiController extends Controller
     private $query;
 
     public function __construct() {
-        $this->query = Customer::select("id", "name", "contact_phone", "gender", "address")->newQuery();
+        $this->query = Customer::select(
+            "id",
+            "name",
+            "contact_phone", 
+            "gender", 
+            "address"
+        )->newQuery();
     }
 
     public function addCustomer(CustomerRequest $request) {
@@ -33,40 +39,31 @@ class CustomerApiController extends Controller
 
     public function getAllCustomer() {
         $customer = $this->query->get();
-        if ($customer->isNotEmpty()) {
-            return $this->responseJson($customer, 200, "Berhasil Mengambil Daftar Pelanggan");
-        }
-        return $this->responseJson(404, "Tidak Ada Daftar Pelanggan");
+  
+        return $customer->isNotEmpty()
+            ? $this->responseJson($customer, 200, "Berhasil Mengambil Daftar Pelanggan")
+            : $this->responseJson(404, "Tidak Ada Daftar Pelanggan");
     }
 
      public function getPaginateCustomers(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
 
-        if ($request->has('search')) {
-            $this->query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $this->query->filterCustomer($request->search);
 
         $customers = $this->query->paginate($perPage, ['*'], 'page', $page);
 
-        if ($customers->isNotEmpty()) {
-            return $this->responseJson([
-                'customers' => $customers, 
-                'total' => $customers->total()
-            ], 200, "Berhasil Mengambil Daftar Paginasi Customer");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Paginasi Customer");
+        return $customers->isNotEmpty()
+            ? $this->responseJson(['customers' => $customers, 'total' => $customers->total()], 200, "Berhasil Mengambil Daftar Paginasi Customer")
+            : $this->responseJson(404, "Tidak Ada Daftar Paginasi Customer");
     }
 
     public function getTrashedCustomers() {
         $trashedCustomer = $this->query->onlyTrashed()->get();
 
-        if ($trashedCustomer->isNotEmpty()) {
-            return $this->responseJson($trashedCustomer, 200, "Berhasil Mengambil Daftar Customer (Trashed)");
-        }
-
-        return $this->responseJson(404, "Tidak Ada Daftar Customer (Trashed)");
+        return $trashedCustomer->isNotEmpty()
+            ? $this->responseJson($trashedCustomer, 200, "Berhasil Mengambil Daftar Customer (Trashed)")
+            : $this->responseJson(404, "Tidak Ada Daftar Customer (Trashed)");
     }
 
     public function restoreTrashedCustomer($customerId) {

@@ -18,7 +18,6 @@ class Product extends Model
         'name',
         'unit_price',
         'description',
-        'additional_description',
         'img_product',
         'isActive'
     ];
@@ -49,11 +48,11 @@ class Product extends Model
                     ->withTimestamps();
     }
 
-    public function scopeFilterProducts($query, $filter) {
+    public function scopeFilterProduct($query, $filter) {
         $query->when($filter ?? false, function($query, $filter) {
             return $query->where(function($query) use($filter) {
-                            $query->where('product_code', 'like', $filter . '%')
-                                    ->orWhere('name', 'like', $filter . '%');  
+                            $query->where('product_code', 'like', '%' . $filter . '%')
+                                    ->orWhere('name', 'like', '%' . $filter . '%');  
                         })
                         ->orWhereRaw('MATCH(description) AGAINST (? IN NATURAL LANGUAGE MODE)', [$filter])
                         ->orderByDesc("name");

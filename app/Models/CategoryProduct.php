@@ -18,4 +18,15 @@ class CategoryProduct extends Model
     public function products() {
         return $this->hasMany(Product::class, 'category_product_id');
     }
+
+    public function scopeIsActive($query) {
+        return $query->where('isActive', true);
+    }
+
+    public function scopeFilterCategory($query, $filter) {
+        return $query->when($filter ?? false, function($query, $filter) {
+            return $query->where('name', 'like', '%' . $filter . '%')
+                         ->orderByDesc("name");
+        });
+    }
 }

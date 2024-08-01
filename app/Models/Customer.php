@@ -15,4 +15,11 @@ class Customer extends Model
         'gender',
         'address'
     ];
+
+    public function scopeFilterCustomer($query, $filter) {
+        return $query->when($filter ?? false, function($query, $filter) {
+            return $query->where('name', 'like', '%' . $filter . '%')
+                         ->orderByDesc("name");
+        });
+    }
 }
