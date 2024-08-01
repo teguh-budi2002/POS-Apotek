@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('supplier_name');
             $table->string('email', 55)->nullable();
-            $table->integer('contact_phone')->nullable();
+            $table->integer('contact_phone');
             $table->string('city');
             $table->string('province');
-            $table->string('zip_code')->nullable();
-            $table->text('address')->nullable();
+            $table->string('zip_code');
+            $table->text('address');
             $table->text('description')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

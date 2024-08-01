@@ -30,6 +30,9 @@ Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('supplier')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [SupplierApiController::class, 'getAllSupplier']);
+  Route::get('/pagination', [SupplierApiController::class, 'getPaginateSuppliers']);
+  Route::get('/trashed', [SupplierApiController::class, 'getTrashedSuppliers']);
+  Route::post('restore-supplier/{id}', [SupplierApiController::class, 'restoreTrashedSupplier']);
   Route::post('add-supplier',[SupplierApiController::class, 'addSupplier']);
   Route::patch('edit-supplier/{id}',[SupplierApiController::class, 'editSupplier']);
   Route::delete('delete-supplier/{id}',[SupplierApiController::class, 'deleteSupplier']);

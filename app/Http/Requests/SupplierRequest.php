@@ -21,16 +21,29 @@ class SupplierRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             "supplier_name" => "required",
             "email" => "nullable|email:dns",
-            "contact_phone" => "nullable|numeric|regex:/^62[0-9]+$/|max_digits:14",
+            "contact_phone" => "required|numeric|regex:/^62[0-9]+$/|max_digits:14",
             "city" => "required",
             "province" => "required",
-            "zip_code" => "nullable|numeric",
-            "address" => "nullable",
+            "zip_code" => "required|numeric",
+            "address" => "required",
             "description" => "nullable"
         ];
+
+        if (in_array($this->method(), ["PUT", "PATCH"])) {
+            $rules['suppluer_name'] = 'nullable';
+            $rules['email'] = 'nullable';
+            $rules['contact_phone'] = 'nullable';
+            $rules['city'] = 'nullable';
+            $rules['province'] = 'nullable';
+            $rules['zip_code'] = 'nullable';
+            $rules['address'] = 'nullable';
+            $rules['description'] = 'nullable';
+        }
+        
+        return $rules;
     }
 
     public function messages()
