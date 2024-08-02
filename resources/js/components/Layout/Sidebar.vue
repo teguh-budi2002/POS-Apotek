@@ -101,7 +101,7 @@
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >
                 <i
-                    class="fas fa-user-shield fa-lg group-hover:text-emerald-300 transition-colors duration-200"
+                    class="fas fa-hospital-user fa-lg group-hover:text-emerald-300 transition-colors duration-200"
                     :class="[$route.name === 'customer' ? 'text-emerald-300' : 'text-emerald-400']"
                 ></i>
                 <div
@@ -130,7 +130,7 @@
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >
                 <i
-                    class="fas fa-user-shield fa-lg group-hover:text-cyan-300 transition-colors duration-200"
+                    class="fas fa-boxes-stacked fa-lg group-hover:text-cyan-300 transition-colors duration-200"
                     :class="[$route.name === 'supplier' ? 'text-cyan-300' : 'text-cyan-400']"
                 ></i>
                 <div
@@ -159,7 +159,7 @@
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >
                 <i
-                    class="fas fa-box-open fa-lg group-hover:text-yellow-300 transition-colors duration-200"
+                    class="fas fa-pills fa-lg group-hover:text-yellow-300 transition-colors duration-200"
                     :class="[$route.name === 'product' ? 'text-yellow-300' : 'text-yellow-400']"
                 ></i>
                 <div
@@ -217,7 +217,7 @@
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
             >
                 <i
-                    class="fas fa-boxes-stacked fa-lg group-hover:text-lime-300 transition-colors duration-200"
+                    class="fas fa-tablets fa-lg group-hover:text-lime-300 transition-colors duration-200"
                     :class="[$route.name === 'unit' ? 'text-lime-300' : 'text-lime-400']"
                 ></i>
                 <div

@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')      
                   ->constrained()
-                  ->onUpdate('cascade')
-                  ->onDelete('cascade');
+                  ->onUpdate('cascade');
             $table->integer('stock');
             $table->integer('minimum_stock_level');
             $table->integer('maximum_stock_level')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -49,7 +49,8 @@ Route::prefix('customer')->middleware('auth:sanctum')->group(function() {
 });
 
 Route::prefix('product')->middleware('auth:sanctum')->group(function() {
-  Route::get('/', [ProductApiController::class, 'getProducts']);
+  Route::get('/', [ProductApiController::class, 'getAllProducts']);
+  Route::get('/pagination', [ProductApiController::class, 'getProductsPerPage']);
   Route::post('add-product',[ProductApiController::class, 'addProduct']);
   Route::patch('edit-product/{product:id}',[ProductApiController::class, 'editProduct']);
   Route::patch('set-status/{id}', [ProductApiController::class, 'setStatusProduct']);
@@ -80,6 +81,9 @@ Route::prefix('unit')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('stock')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [StockApiController::class, 'getAllStock']);
+  Route::get('/pagination', [StockApiController::class, 'getPaginateStocks']);
+  Route::get('/trashed', [StockApiController::class, 'getTrashedStocks']);
+  Route::post('restore-stock/{id}', [StockApiController::class, 'restoreTrashedStock']);
   Route::post('add-stock', [StockApiController::class, 'addStock']);
   Route::patch('edit-stock/{id}', [StockApiController::class, 'editStock']);
   Route::delete('delete-stock/{id}', [StockApiController::class, 'deleteStock']);

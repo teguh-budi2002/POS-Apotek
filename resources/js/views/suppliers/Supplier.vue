@@ -290,9 +290,10 @@
                         />
                     </div>
                     <div class="mt-1">
-                        <label for="email" class="text-sm"
-                            >Email Supplier</label
-                        >
+                        <label for="email" class="text-sm block">
+                            Email Supplier
+                            <span class="text-xs text-rose-500">(opsional)</span>
+                        </label>
                         <p class="mt-2 text-rose-500 text-xs">
                             {{ errors.email }}
                         </p>
@@ -378,9 +379,10 @@
                         />
                     </div>
                     <div class="mt-1">
-                        <label for="description" class="text-sm"
-                            >Description Supplier</label
-                        >
+                        <label for="description" class="text-sm block">
+                            Description Supplier
+                            <span class="text-xs text-rose-500">(opsional)</span>
+                        </label>
                         <p class="mt-2 text-rose-500 text-xs">
                             {{ errors.description }}
                         </p>

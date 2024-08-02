@@ -48,7 +48,7 @@ export const useProductStore = defineStore("useProductStore", {
         async getProductsPerPage(page = 1, rows = 10) {
             this.errorGetProduct = false;
             try {
-                const response = await apiServices.get(`product?page=${page}`, {
+                const response = await apiServices.get(`product/pagination?page=${page}`, {
                     params: {
                         page,
                         rows,

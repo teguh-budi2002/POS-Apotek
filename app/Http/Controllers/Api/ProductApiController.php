@@ -53,8 +53,16 @@ class ProductApiController extends Controller
                 $validation['img_product'] = $this->img_name;
             }
             $productCreated = Product::create($validation);
+            
+            if ($request->has('stock') || $request->has('minimum_stock_level')) {
+                $productCreated->stock()->create([
+                   'stock' => $request->stock,
+                   'minimum_stock_level' => $request->minimum_stock_level, 
+                   'maximum_stock_level' => $request->maximum_stock_level, 
+                ]);    
+            }
+            
             $productId = $productCreated->id;
-
             $addedProduct = $this->query->findOrFail($productId);
             DB::commit();
             
@@ -65,7 +73,14 @@ class ProductApiController extends Controller
         }
     }
 
-    public function getProducts(Request $request) {
+    public function getAllProducts() {
+        $products = $this->query->get();
+
+        return $products->isNotEmpty()
+            ? $this->responseJson($products, 200, "Berhasil Mengambil Daftar Produk")
+            : $this->responseJson(404, "Tidak Ada Daftar Produk");
+    }
+    public function getProductsPerPage(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
     
