@@ -178,18 +178,25 @@
                                     <p class="text-center">
                                         {{ slotProps.data.stock.stock }}
                                     </p>
-                                </div>
-                                <div v-else>
-                                    <p class="text-center">0</p>
-                                </div>
-                                <router-link to="">
                                     <Button
                                         label="Update Stok"
                                         size="small"
                                         severity="help"
                                         class="mt-2"
+                                        @click="openDialogUpdateStock(slotProps.data.name, slotProps.data.stock)"
                                     />
-                                </router-link>
+                                </div>
+                                <div v-else>
+                                    <p class="text-center">0</p>
+                                    <router-link to="">
+                                        <Button
+                                            label="Update Stok"
+                                            size="small"
+                                            severity="help"
+                                            class="mt-2"
+                                        />
+                                    </router-link>
+                                </div>
                             </template>
                         </Column>
                         <Column
@@ -407,7 +414,47 @@
                 </div>
                 <template #footer>
                     <Button @click="showDialogDeleteProduct = false" icon="pi pi-times" label="Tutup" severity="secondary" text/>
-                    <Button @click="deleteProduct" icon="pi pi-check" label="Yes" severity="danger" text />
+                    <Button @click="deleteProduct" icon="pi pi-check" label="Ya, Hapus" severity="danger" text />
+                </template>
+            </Dialog>
+            <Dialog v-model:visible="showDialogUpdateStock" :style="{width: '35rem'}" header="Update Stock" :modal="true">
+                <div>
+                    <p class="">Update stok pada produk: <b>{{ selectedStock.product_name }}</b></p>
+
+                    <div class="mt-3">
+                        <label for="stock" class="text-sm block">Stock</label>
+                        <InputNumber
+                            id="stock"
+                            v-model="selectedStock.stock.stock"
+                            class="mt-2"
+                        />
+                    </div>
+                    <div class="mt-3">
+                        <label for="min_stock" class="text-sm block"
+                            >Min Stock</label
+                        >
+                        <InputNumber
+                            id="min_stock"
+                            v-model="selectedStock.stock.minimum_stock_level"
+                            class="mt-2"
+                        />
+                    </div>
+                    <div class="mt-3">
+                        <label for="max_stock" class="text-sm block"
+                            >Max Stock
+                        </label
+                        >
+                        <InputNumber
+                            id="max_stock"
+                            v-model="selectedStock.stock.maximum_stock_level"
+                            class="mt-2"
+                        />
+                    </div>
+                </div>
+                <template #footer>
+                    <Button @click="updateStock" icon="pi pi-check" label="Update" severity="success" raised />
+                    <Button @click="showDialogUpdateStock = false" icon="pi pi-times" label="Tutup" severity="secondary" outlined/>
+
                 </template>
             </Dialog>
             <Drawer
@@ -636,12 +683,14 @@ export default {
         const totalRecords = ref(0);
         const selectedCategory = ref();
         const selectedUnit = ref();
+        const selectedStock = ref([]);
         const fileupload = ref();
         const { getAllCategoryProduct, categories } = useCategoryStore();
         const { getAllUnitProduct, units } = useUnitProductStore();
         const toast = useToast();
         const showDialogDetailProduct = ref(false);
         const showDialogDeleteProduct = ref(false);
+        const showDialogUpdateStock = ref(false)
         const dataTable = ref([]);
         const searchQuery = ref(productStore.filters.search || '')
         const cm = ref();
@@ -986,6 +1035,41 @@ export default {
             showDialogDetailProduct.value = true;
         };
 
+        const openDialogUpdateStock = (product_name, stock) => {
+            const mergeValue = { "product_name": product_name, stock }
+            selectedStock.value = mergeValue
+            
+            showDialogUpdateStock.value = true
+        }
+
+        const updateStock = async () => {
+            const datas = {
+                stock: selectedStock.value.stock.stock,
+                minimum_stock_level: selectedStock.value.stock.minimum_stock_level,
+                maximum_stock_level: selectedStock.value.stock.maximum_stock_level,
+            }
+
+            await productStore.updateStockProduct(datas, selectedStock.value.stock.id);
+
+            if (productStore.errorUpdateStock) {
+                toast.add({
+                    severity: "error",
+                    life: 3000,
+                    summary: "Update Stock Product Failed",
+                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+                });
+            } else {
+                showDialogUpdateStock.value = false
+                toast.add({
+                    severity: "success",
+                    life: 3000,
+                    summary: "Update Stock Product Successfully",
+                    detail: "Update Stok Produk Berhasil",
+                });
+            }
+            
+        }
+
         return {
             products,
             productStore,
@@ -1044,7 +1128,11 @@ export default {
             rowsPerPageOptions,
             onRowsChange,
             showDialogDeleteProduct,
-            deleteProduct
+            deleteProduct,
+            showDialogUpdateStock,
+            openDialogUpdateStock,
+            selectedStock,
+            updateStock
         };
     },
 };

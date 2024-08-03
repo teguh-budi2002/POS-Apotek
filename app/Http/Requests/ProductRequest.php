@@ -28,7 +28,9 @@ class ProductRequest extends BaseFormRequest
             'name' => 'required',
             'unit_price' => 'required|numeric',
             'description' => 'nullable|string',
-            'img_product' => 'required|file|max:2048|mimes:png,jpg,webp'
+            'img_product' => 'required|file|max:2048|mimes:png,jpg,webp',
+            'stock' => 'required|numeric',
+            'minimum_stock_level' => 'required|numeric'
         ];
 
         if (in_array($this->method(), ['PUT', 'PATCH'])) {
@@ -39,6 +41,8 @@ class ProductRequest extends BaseFormRequest
             $rules['unit_price'] = 'nullable|numeric|min:0';
             $rules['description'] = 'nullable|string';
             $rules['img_product'] = 'nullable|file|max:2048|mimes:png,jpg,webp';
+            $rules['stock'] = 'nullable|numeric';
+            $rules['minimum_stock_level'] = 'nullable|numeric';
         }
 
         return $rules;
@@ -57,6 +61,14 @@ class ProductRequest extends BaseFormRequest
             'unit_price' => [
                 'required' => 'Harga wajib diisi.',
                 'numeric' => 'Harga harus berupa angka.'
+            ],
+            'stock' => [
+                'required' => 'Stok produk wajib diisi.',
+                'numeric' => 'Stok harus berupa angka.'
+            ],
+            'minimum_stock_level' => [
+                'required' => 'Minimum stok produk wajib diisi.',
+                'numeric' => 'Minimum stok harus berupa angka.'
             ],
             'img_product' => [
                 "required" => 'Produk harus memiliki foto.',

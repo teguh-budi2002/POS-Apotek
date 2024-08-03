@@ -9,6 +9,7 @@ export const useProductStore = defineStore("useProductStore", {
         errorAddedData: false,
         errorUpdateData: false,
         errorDeleteProduct: false,
+        errorUpdateStock: false,
         filters: {
             search: ''
         },
@@ -144,6 +145,24 @@ export const useProductStore = defineStore("useProductStore", {
         clearInfoDeletedProduct(id) {
             this.infoDeletedProduct.id = null
             this.infoDeletedProduct.name = null
+        },
+
+        async updateStockProduct(datas, stockId) {
+            this.errorUpdateStock = false
+            try {
+                const response = await apiServices.patch(`stock/edit-stock/${stockId}`, datas)
+
+                if (response.data.status_code === 200) {
+                    const newUpdatedStockProduct = response.data.datas.newUpdatedStockProduct
+                    const indexOfProduct = this.products.findIndex((product) => product.id === newUpdatedStockProduct.product_id)
+
+                    if (indexOfProduct !== -1) { 
+                        this.products.stock.splice(indexOfProduct, 1, newUpdatedStockProduct)
+                    }
+                }
+            } catch (error) {
+                this.errorUpdateData = true
+            }
         }
     },
     persist: true,

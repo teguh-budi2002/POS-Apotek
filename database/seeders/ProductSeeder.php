@@ -23,7 +23,9 @@ class ProductSeeder extends Seeder
                 'category_product_id' => 1,
                 'unit_product_id' => 1,
                 'img_product' => 'komik.jpg',
-                'unit_price' => $faker->randomNumber(7, true)
+                'unit_price' => $faker->randomNumber(7, true),
+                'stock' => $faker->numberBetween(10, 100),
+                'minimum_stock_level' => $faker->numberBetween(1, 20),
             ]);
         }
     }

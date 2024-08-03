@@ -84,7 +84,7 @@ class StockApiController extends Controller
             StockProduct::whereId($stockId)->update($validation);
             DB::commit();
 
-            $updatedStockProduct = $this->query->with('product')->findOrFail($stockId);
+            $updatedStockProduct = $this->query->findOrFail($stockId);
             
             return $this->responseJson([
                 'newUpdatedStockProduct' => $updatedStockProduct
