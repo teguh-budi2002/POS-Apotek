@@ -54,4 +54,19 @@ class StockRequest extends BaseFormRequest
             ],
         ];
     }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $data = $this->all();
+             $hasMaximumStockLevel = isset($data['maximum_stock_level']) && $data['maximum_stock_level'] !== null;
+
+            if ($data['minimum_stock_level'] > $data['stock'] || ($hasMaximumStockLevel && $data['minimum_stock_level'] > $data['maximum_stock_level'])) {
+                $validator->errors()->add('minimum_stock_level', 'Minimum Stock Tidak Boleh Lebih Besar Dari Stock & Max Stock');
+            }
+            if ($hasMaximumStockLevel && ($data['maximum_stock_level'] < $data['stock'] || $data['maximum_stock_level'] < $data['minimum_stock_level'])) {
+                $validator->errors()->add('maximum_stock_level', 'Maximum Stock Tidak Boleh Lebih Kecil Dari Stock & Max Stock');
+            }
+        });
+    }
 }

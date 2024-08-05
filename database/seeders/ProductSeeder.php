@@ -17,13 +17,17 @@ class ProductSeeder extends Seeder
         $faker = Faker::create('id_ID');
         
         for ($i=0; $i <= 100; $i++) { 
-            Product::create([
+            $productCreated = Product::create([
                 'product_code' => 'A-' . $faker->numberBetween(4, 100),
                 'name' => 'Product' . $faker->name,
                 'category_product_id' => 1,
                 'unit_product_id' => 1,
                 'img_product' => 'komik.jpg',
                 'unit_price' => $faker->randomNumber(7, true),
+            ]);
+            
+            $productCreated->stock()->create([
+                'product_id' => $productCreated->id,
                 'stock' => $faker->numberBetween(10, 100),
                 'minimum_stock_level' => $faker->numberBetween(1, 20),
             ]);

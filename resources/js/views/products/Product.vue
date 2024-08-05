@@ -585,7 +585,7 @@
                             v-bind="maximumStockLevelAttr"
                             class="mt-2"
                         />
-                    </div>
+                    </div>☻
                     <div class="mt-3 flex flex-col items-start">
                         <label for="img+product" class="text-sm block"
                             >Foto Produk</label
@@ -660,6 +660,7 @@ import { useUnitProductStore } from "../../stores/unit_product";
 import { useToast } from "primevue/usetoast";
 import { useForm } from "vee-validate";
 import * as Yup from "yup";
+import { validateStockLevels } from "../../helpers/validateStock";
 
 export default {
     components: {
@@ -844,12 +845,16 @@ export default {
                 stock: Yup.number("Stock harus berupa angka").required(
                     "Stock produk wajib diisi."
                 ),
-                minimum_stock_level: Yup.number(
-                    "Min stock harus berupa angka"
-                ).required("Stock minimum produk wajib diisi."),
+                minimum_stock_level: Yup.number("Min stock harus berupa angka").required("Stock minimum produk wajib diisi.").test('min_stock-test', 'Min stok tidak boleh lebih besar dari stok atau max stok', function (value) {
+                    const { stock, maximum_stock_level } = this.parent;
+                    return value <= stock && (!maximum_stock_level || value <= maximum_stock_level);
+                }),
                 maximum_stock_level: Yup.number(
                     "Max stock harus berupa angka"
-                ).nullable(),
+                ).nullable().test("max_stock-test", "Maximum stok harus lebih besar dari stok atau min stock", function (value) {
+                    const { stock, minimum_stock_level } = this.parent;
+                    return value >= stock && (!minimum_stock_level || value >= minimum_stock_level);
+                }),
                 img_product: Yup.string().required("Foto produk wajib diisi."),
                 description: Yup.string().nullable(),
             }),
@@ -1049,7 +1054,14 @@ export default {
                 maximum_stock_level: selectedStock.value.stock.maximum_stock_level,
             }
 
+            const validationStock = validateStockLevels(datas)
+            if (validationStock) {
+                toast.add(validationStock);
+                return;
+            }
+
             await productStore.updateStockProduct(datas, selectedStock.value.stock.id);
+            
 
             if (productStore.errorUpdateStock) {
                 toast.add({

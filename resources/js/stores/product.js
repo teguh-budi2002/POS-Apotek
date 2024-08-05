@@ -135,7 +135,7 @@ export const useProductStore = defineStore("useProductStore", {
                     }
                  }
              } catch (error) {
-                 this.errorUpdateData = true
+                 this.errorUpdateData = true                 
              }
         },
         setInfoDeletedProduct(id, name) {
@@ -146,22 +146,21 @@ export const useProductStore = defineStore("useProductStore", {
             this.infoDeletedProduct.id = null
             this.infoDeletedProduct.name = null
         },
-
         async updateStockProduct(datas, stockId) {
-            this.errorUpdateStock = false
+            this.errorUpdateStock = false;
             try {
-                const response = await apiServices.patch(`stock/edit-stock/${stockId}`, datas)
-
+                const response = await apiServices.patch(`stock/edit-stock/${stockId}`, datas);
+        
                 if (response.data.status_code === 200) {
-                    const newUpdatedStockProduct = response.data.datas.newUpdatedStockProduct
-                    const indexOfProduct = this.products.findIndex((product) => product.id === newUpdatedStockProduct.product_id)
-
-                    if (indexOfProduct !== -1) { 
-                        this.products.stock.splice(indexOfProduct, 1, newUpdatedStockProduct)
+                    const newUpdatedStockProduct = response.data.datas.newUpdatedStockProduct;
+                    const indexOfProduct = this.products.findIndex((product) => product.id === newUpdatedStockProduct.product_id);
+        
+                    if (indexOfProduct !== -1) {
+                        this.products.splice(indexOfProduct, 1, newUpdatedStockProduct);
                     }
                 }
             } catch (error) {
-                this.errorUpdateData = true
+                this.errorUpdateStock = true;
             }
         }
     },
