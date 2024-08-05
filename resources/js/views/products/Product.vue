@@ -375,16 +375,17 @@
                             <p>
                                 Minimum Level Stok:
                                 {{
-                                    selectedDialogProduct.stock
-                                        .minimum_stock_level
+                                    selectedDialogProduct.stock.minimum_stock_level
                                 }}
                             </p>
                             <p>
                                 Maximum Level Stok:
-                                {{
-                                    selectedDialogProduct.stock
-                                        .maximum_stock_level
-                                }}
+                                <span v-if="selectedDialogProduct.stock.maximum_stock_level">
+                                    {{
+                                        selectedDialogProduct.stock.maximum_stock_level
+                                    }}
+                                </span>
+                                <span v-else>0</span>
                             </p>
                         </div>
                         <div v-else>
@@ -585,7 +586,7 @@
                             v-bind="maximumStockLevelAttr"
                             class="mt-2"
                         />
-                    </div>☻
+                    </div>
                     <div class="mt-3 flex flex-col items-start">
                         <label for="img+product" class="text-sm block"
                             >Foto Produk</label
@@ -853,7 +854,7 @@ export default {
                     "Max stock harus berupa angka"
                 ).nullable().test("max_stock-test", "Maximum stok harus lebih besar dari stok atau min stock", function (value) {
                     const { stock, minimum_stock_level } = this.parent;
-                    return value >= stock && (!minimum_stock_level || value >= minimum_stock_level);
+                    return !value || (value >= stock && value >= minimum_stock_level);
                 }),
                 img_product: Yup.string().required("Foto produk wajib diisi."),
                 description: Yup.string().nullable(),
