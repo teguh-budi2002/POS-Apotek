@@ -121,16 +121,51 @@
                         </Column>
                         <Column
                             field="unit_price"
-                            header="Harga Produk"
-                            exportHeader="Harga Produk"
+                            header="Harga Pembelian (default)"
                         >
                             <template #body="slotProps">
-                                {{
-                                    formatCurrencyIDR(slotProps.data.unit_price)
-                                }}
+                                {{ formatCurrencyIDR(slotProps.data.unit_price) }}
                             </template>
                             <template #editor="{ data, field }">
-                                <InputText v-model="data[field]" />
+                              <InputGroup>
+                                <InputGroupAddon>IDR</InputGroupAddon>
+                                <InputNumber 
+                                  v-model="data[field]"
+                                  @input="(value) => calculateMarginAndSellingPrice(data, field, value)"
+                                />
+                              </InputGroup>
+                            </template>
+                        </Column>
+                        <Column
+                            field="profit_margin"
+                            header="Profit Margin"
+                        >
+                            <template #body="slotProps">
+                                {{ slotProps.data.profit_margin }}%
+                            </template>
+                            <template #editor="{ data, field }">
+                                <InputNumber 
+                                  v-model="data[field]" 
+                                  suffix="%"
+                                  @input="(value) => calculateMarginAndSellingPrice(data, field, value)"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="unit_selling_price"
+                            header="Harga Penjualan (default)"
+                        >
+                            <template #body="slotProps">
+                                {{ formatCurrencyIDR(slotProps.data.unit_selling_price) }}
+                            </template>
+                            <template #editor="{ data, field }">
+                              <InputGroup>
+                                <InputGroupAddon>IDR</InputGroupAddon>
+                                <InputNumber 
+                                  v-model="data[field]" 
+                                  @input="(value) => calculateMarginAndSellingPrice(data, field, value)" 
+                                />
+                              </InputGroup>
                             </template>
                         </Column>
                         <Column
@@ -224,16 +259,16 @@
                                 />
                             </template>
                         </Column>
-                        <Column field="isActive" header="Status Aktif">
+                        <Column field="isActive" header="Status Jual">
                             <template #body="slotProps">
                                 <div
                                     v-if="slotProps.data.isActive"
                                     class="text-center"
                                 >
-                                    <Button severity="success" label="Active" />
+                                    <Button severity="success" label="Dijual" />
                                 </div>
                                 <div v-else class="text-center">
-                                    <Button severity="danger" label="Draft" />
+                                    <Button severity="danger" label="Tidak Dijual" />
                                 </div>
                             </template>
                         </Column>
@@ -462,7 +497,7 @@
                 v-model:visible="openDrawer"
                 header="Tambah Produk"
                 position="right"
-                class="!w-96"
+                class="!w-2/5"
                 style="height: 100vh"
             >
                 <form @submit="submitProduct" enctype="multipart/form-data">
@@ -495,7 +530,10 @@
                         />
                     </div>
                     <div class="mt-3">
-                        <label for="price" class="text-sm">Harga Produk</label>
+                        <div class="flex items-center space-x-2">
+                            <label for="price" class="text-sm">Harga Pembelian Produk</label>
+                            <p class="text-sm text-blue-500">(Satuan)</p>
+                        </div>
                         <p class="mt-2 text-rose-500 text-xs">
                             {{ errors.unit_price }}
                         </p>
@@ -506,7 +544,44 @@
                                 inputId="locale-id"
                                 prefix="Rp "
                                 v-model="unit_price"
+                                @input="(value) => calculateMarginAndSellingPrice(null,'unit_price', value)"
                                 v-bind="unitPriceAttr"
+                                autocomplete="off"
+                            />
+                        </InputGroup>
+                    </div>
+                    <div class="mt-3">
+                        <label for="profit_margin" class="text-sm">Profit Margin (%)</label>
+                        <p class="mt-2 text-rose-500 text-xs">
+                            {{ errors.profit_margin }}
+                        </p>
+                        <InputNumber
+                            id="profit_margin"
+                            inputId="locale-id"
+                            class="w-full"
+                            suffix="%"
+                            v-model="profit_margin"
+                            @input="(value) => calculateMarginAndSellingPrice('profit_margin', value)"
+                            v-bind="profitMarginAttr"
+                        />
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-center space-x-2">
+                            <label for="unit_selling_price" class="text-sm">Harga Penjualan Produk</label>
+                            <p class="text-sm text-blue-500">(Satuan)</p>
+                        </div>
+                        <p class="mt-2 text-rose-500 text-xs">
+                            {{ errors.unit_selling_price }}
+                        </p>
+                        <InputGroup class="mt-2">
+                            <InputGroupAddon>IDR</InputGroupAddon>
+                            <InputNumber
+                                id="unit_selling_price"
+                                inputId="locale-id"
+                                prefix="Rp "
+                                v-model="unit_selling_price"
+                                @input="(value) => calculateMarginAndSellingPrice('unit_selling_price', value)"
+                                v-bind="unitSellingPriceAttr"
                             />
                         </InputGroup>
                     </div>
@@ -664,489 +739,546 @@ import * as Yup from "yup";
 import { validateStockLevels } from "../../helpers/validateStock";
 
 export default {
-    components: {
-        Content,
-        InputText,
-        InputNumber,
-        InputGroup,
-        InputGroupAddon,
-        IconField,
-        InputIcon,
-        ContextMenu,
-        Drawer,
-        Textarea,
-        FileUpload,
-    },
-    setup() {
-        const productStore = useProductStore();
-        const products = ref([]);
-        const selectedProduct = ref();
-        const selectedDialogProduct = ref();
-        const totalRecords = ref(0);
-        const selectedCategory = ref();
-        const selectedUnit = ref();
-        const selectedStock = ref([]);
-        const fileupload = ref();
-        const { getAllCategoryProduct, categories } = useCategoryStore();
-        const { getAllUnitProduct, units } = useUnitProductStore();
-        const toast = useToast();
-        const showDialogDetailProduct = ref(false);
-        const showDialogDeleteProduct = ref(false);
-        const showDialogUpdateStock = ref(false)
-        const dataTable = ref([]);
-        const searchQuery = ref(productStore.filters.search || '')
-        const cm = ref();
-        const expandedRows = ref({});
-        const loading = ref(false);
-        const isExporting = ref(false)
-        const openDrawer = ref(false);
-        const headers = ref([
-            "Kode Produk",
-            "Nama Produk",
-            "Kategori",
-            "Harga",
-            "Satuan",
-            "Stok",
-            "Min Stok Level",
-            "Max Stok Level",
-        ])
-        const rows = ref(10)
-        const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
+  components: {
+      Content,
+      InputText,
+      InputNumber,
+      InputGroup,
+      InputGroupAddon,
+      IconField,
+      InputIcon,
+      ContextMenu,
+      Drawer,
+      Textarea,
+      FileUpload,
+  },
+  setup() {
+      const productStore = useProductStore();
+      const products = ref([]);
+      const selectedProduct = ref();
+      const selectedDialogProduct = ref();
+      const totalRecords = ref(0);
+      const selectedCategory = ref();
+      const selectedUnit = ref();
+      const selectedStock = ref([]);
+      const fileupload = ref();
+      const { getAllCategoryProduct, categories } = useCategoryStore();
+      const { getAllUnitProduct, units } = useUnitProductStore();
+      const toast = useToast();
+      const showDialogDetailProduct = ref(false);
+      const showDialogDeleteProduct = ref(false);
+      const showDialogUpdateStock = ref(false)
+      const dataTable = ref([]);
+      const searchQuery = ref(productStore.filters.search || '')
+      const cm = ref();
+      const expandedRows = ref({});
+      const loading = ref(false);
+      const isExporting = ref(false)
+      const openDrawer = ref(false);
+      const headers = ref([
+          "Kode Produk",
+          "Nama Produk",
+          "Kategori",
+          "Harga",
+          "Satuan",
+          "Stok",
+          "Min Stok Level",
+          "Max Stok Level",
+      ])
+      const rows = ref(10)
+      const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
 
-        onMounted(async () => {
-            searchQuery.value = productStore.filters.search || '';
-            await loadProducts();
-            await loadCategoryProduct();
-            await loadUnitProduct();
-        });
+      onMounted(async () => {
+          searchQuery.value = productStore.filters.search || '';
+          Promise.all([
+              loadProducts(),
+              loadCategoryProduct(),
+              loadUnitProduct()
+          ])
+      });
 
-        const loadProducts = async (page = 1, rowsPerPage = rows.value) => {
-            loading.value = true;
+      const loadProducts = async (page = 1, rowsPerPage = rows.value) => {
+          loading.value = true;
 
-            await productStore.getProductsPerPage(page, rowsPerPage);
-            products.value = productStore.products;
-            totalRecords.value = productStore.totalRecords;
+          await productStore.getProductsPerPage(page, rowsPerPage);
+          products.value = productStore.products;
+          totalRecords.value = productStore.totalRecords;
 
-            loading.value = false;
-        };
+          loading.value = false;
+      };
 
-        const loadCategoryProduct = async () => {
-            await getAllCategoryProduct();
-        };
+      const loadCategoryProduct = async () => {
+          await getAllCategoryProduct();
+      };
 
-        const loadUnitProduct = async () => {
-            await getAllUnitProduct();
-        };
+      const loadUnitProduct = async () => {
+          await getAllUnitProduct();
+      };
 
-        const clearFilter = () => {
-            searchQuery.value = ''
-            productStore.filters.search = ''
-        };
+      const clearFilter = () => {
+          searchQuery.value = ''
+          productStore.filters.search = ''
+      };
 
-        const onPage = (e) => {
-            loadProducts(e.page + 1, e.rows)
-        };
+      const onPage = (e) => {
+          loadProducts(e.page + 1, e.rows)
+      };
 
-        const onRowsChange = (event) => {
-            rows.value = event.rows;
-            loadProducts(1, event.rows);
-        };
+      const onRowsChange = (event) => {
+          rows.value = event.rows;
+          loadProducts(1, event.rows);
+      };
 
-        const debouncedSearch = debounce((value) => {
-            productStore.setFilter('search', value)
-            loadProducts()
-        }, 500)
+      const debouncedSearch = debounce((value) => {
+          productStore.setFilter('search', value)
+          loadProducts()
+      }, 500)
 
-        watch(searchQuery, (newQuery, oldQuery) => {
-            if (newQuery !== oldQuery) {
-                debouncedSearch(newQuery)
-            }
-        })
+      watch(searchQuery, (newQuery, oldQuery) => {
+          if (newQuery !== oldQuery) {
+              debouncedSearch(newQuery)
+          }
+      })
 
-        const exportExcel = async () => {
-            isExporting.value = true
-            const { utils, writeFileXLSX } = await import("xlsx");
+      const exportExcel = async () => {
+          isExporting.value = true
+          const { utils, writeFileXLSX } = await import("xlsx");
 
-            if (dataTable.value) {
-                const date = new Date()
+          if (dataTable.value) {
+              const date = new Date()
 
-                const data = products.value.map((product) => ({
-                    "Kode Produk": product.product_code,
-                    "Nama Produk": product.name,
-                    "Kategori": product.category?.name,
-                    "Harga": formatCurrencyIDR(product.unit_price),
-                    "Satuan": product.unit.name,
-                    "Stok": product.stock?.stock,
-                    "Min Stok Level": product.stock?.minimum_stock_level,
-                    "Max Stok Level": product.stock?.maximum_stock_level,
-                }));
+              const data = products.value.map((product) => ({
+                  "Kode Produk": product.product_code,
+                  "Nama Produk": product.name,
+                  "Kategori": product.category?.name,
+                  "Harga": formatCurrencyIDR(product.unit_price),
+                  "Satuan": product.unit.name,
+                  "Stok": product.stock?.stock,
+                  "Min Stok Level": product.stock?.minimum_stock_level,
+                  "Max Stok Level": product.stock?.maximum_stock_level,
+              }));
 
-                const worksheetData = [
-                    headers.value,
-                    ...data.map((item) =>
-                        headers.value.map((header) => item[header])
-                    ),
-                ];
-                const worksheet = utils.aoa_to_sheet(worksheetData)
-                const workbook = utils.book_new();
-                utils.book_append_sheet(workbook, worksheet, "Data");
+              const worksheetData = [
+                  headers.value,
+                  ...data.map((item) =>
+                      headers.value.map((header) => item[header])
+                  ),
+              ];
+              const worksheet = utils.aoa_to_sheet(worksheetData)
+              const workbook = utils.book_new();
+              utils.book_append_sheet(workbook, worksheet, "Data");
 
-                writeFileXLSX(workbook, `DataProduk_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.xlsx`);
-                isExporting.value = false
-            } else {
-                isExporting.value = false
-                console.log(dataTable.value, "Datatable ref is null");
-            }
-        };
-        const exportPDF = async () => {
-            isExporting.value = true
-            const { default: jsPDF } = await import("jspdf")
-            const { default: autoTable } = await import("jspdf-autotable")
-            
-            if (dataTable.value) {
-                const date = new Date()
-                const doc = new jsPDF()
-                const data = products.value.map((product) => ({
-                    "Kode Produk": product.product_code,
-                    "Nama Produk": product.name,
-                    "Kategori": product.category?.name,
-                    "Harga": formatCurrencyIDR(product.unit_price),
-                    "Satuan": product.unit.name,
-                    "Stok": product.stock?.stock,
-                    "Min Stok Level": product.stock?.minimum_stock_level,
-                    "Max Stok Level": product.stock?.maximum_stock_level,
-                }));
+              writeFileXLSX(workbook, `DataProduk_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.xlsx`);
+              isExporting.value = false
+          } else {
+              isExporting.value = false
+              console.log(dataTable.value, "Datatable ref is null");
+          }
+      };
+      const exportPDF = async () => {
+          isExporting.value = true
+          const { default: jsPDF } = await import("jspdf")
+          const { default: autoTable } = await import("jspdf-autotable")
+          
+          if (dataTable.value) {
+              const date = new Date()
+              const doc = new jsPDF()
+              const data = products.value.map((product) => ({
+                  "Kode Produk": product.product_code,
+                  "Nama Produk": product.name,
+                  "Kategori": product.category?.name,
+                  "Harga": formatCurrencyIDR(product.unit_price),
+                  "Satuan": product.unit.name,
+                  "Stok": product.stock?.stock,
+                  "Min Stok Level": product.stock?.minimum_stock_level,
+                  "Max Stok Level": product.stock?.maximum_stock_level,
+              }));
 
-                const tableData = data.map(item => headers.value.map(header => item[header]))
+              const tableData = data.map(item => headers.value.map(header => item[header]))
 
-                autoTable(doc, {
-                    head: [headers.value],
-                    body: tableData
-                })
-    
-                doc.save(`DataProduk_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.pdf`)
-                isExporting.value = false
-            } else {
-                isExporting.value = false
-                console.log(dataTable.value, "Datatable ref is null");
-            }
-        };
+              autoTable(doc, {
+                  head: [headers.value],
+                  body: tableData
+              })
 
-        const { errors, handleSubmit, defineField } = useForm({
-            validationSchema: Yup.object().shape({
-                name: Yup.string().required("Nama wajib diisi."),
-                product_code: Yup.string()
-                    .required("Kode produk wajib diisi.")
-                    .max(6, "Maksimal Kode Produk 6 karakter"),
-                category_product_id: Yup.string().required(
-                    "Pilih kategori produk"
-                ),
-                unit_product_id: Yup.string().required("Pilih satuan produk"),
-                unit_price: Yup.number().required("Harga produk wajib diisi."),
-                stock: Yup.number("Stock harus berupa angka").required(
-                    "Stock produk wajib diisi."
-                ),
-                minimum_stock_level: Yup.number("Min stock harus berupa angka").required("Stock minimum produk wajib diisi.").test('min_stock-test', 'Min stok tidak boleh lebih besar dari stok atau max stok', function (value) {
-                    const { stock, maximum_stock_level } = this.parent;
-                    return value <= stock && (!maximum_stock_level || value <= maximum_stock_level);
-                }),
-                maximum_stock_level: Yup.number(
-                    "Max stock harus berupa angka"
-                ).nullable().test("max_stock-test", "Maximum stok harus lebih besar dari stok atau min stock", function (value) {
-                    const { stock, minimum_stock_level } = this.parent;
-                    return !value || (value >= stock && value >= minimum_stock_level);
-                }),
-                img_product: Yup.string().required("Foto produk wajib diisi."),
-                description: Yup.string().nullable(),
-            }),
-        });
+              doc.save(`DataProduk_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.pdf`)
+              isExporting.value = false
+          } else {
+              isExporting.value = false
+              console.log(dataTable.value, "Datatable ref is null");
+          }
+      };
 
-        const [name, nameAttr] = defineField("name");
-        const [product_code, productCodeAttr] = defineField("product_code");
-        const [category_product_id, categoryProductIdAttr] = defineField(
-            "category_product_id"
-        );
-        const [unit_product_id, unitProductIdAttr] =
-            defineField("unit_product_id");
-        const [stock, stockAttr] = defineField("stock");
-        const [minimum_stock_level, minimumStockLevelAttr] = defineField(
-            "minimum_stock_level"
-        );
-        const [maximum_stock_level, maximumStockLevelAttr] = defineField(
-            "maximum_stock_level"
-        );
-        const [unit_price, unitPriceAttr] = defineField("unit_price");
-        const [img_product, imgProductAttr] = defineField("img_product");
-        const [description, descriptionAttr] = defineField("description");
+      const { errors, handleSubmit, defineField } = useForm({
+          validationSchema: Yup.object().shape({
+              name: Yup.string().required("Nama wajib diisi."),
+              product_code: Yup.string()
+                  .required("Kode produk wajib diisi.")
+                  .max(6, "Maksimal Kode Produk 6 karakter"),
+              category_product_id: Yup.string().required(
+                  "Pilih kategori produk"
+              ),
+              unit_product_id: Yup.string().required("Pilih satuan produk"),
+              unit_price: Yup.number().required("Harga pembelian default produk wajib diisi."),
+              profit_margin: Yup.number().required("Margin wajib diisi."),
+              unit_selling_price: Yup.number().required("Harga penjualan default wajib diisi."),
+              stock: Yup.number("Stock harus berupa angka").required(
+                  "Stock produk wajib diisi."
+              ),
+              minimum_stock_level: Yup.number("Min stock harus berupa angka")
+                .required("Stock minimum produk wajib diisi.")
+                .test('min_stock-test', 'Min stok tidak boleh lebih besar dari stok atau max stok', function (value) {
+                  const { stock, maximum_stock_level } = this.parent;
+                  return value <= stock && (!maximum_stock_level || value <= maximum_stock_level);
+              }),
+              maximum_stock_level: Yup.number("Max stock harus berupa angka")
+                .nullable()
+                .test("max_stock-test", "Maximum stok harus lebih besar dari stok atau min stock", function (value) {
+                  const { stock, minimum_stock_level } = this.parent;
+                  return !value || (value >= stock && value >= minimum_stock_level);
+              }),
+              img_product: Yup.string().required("Foto produk wajib diisi."),
+              description: Yup.string().nullable(),
+          }),
+        initialValues: {
+            profit_margin: 20
+          }
+      });
 
-        const updateCategoryProductId = (event) => {
-            category_product_id.value = event.value ? event.value.id : null;
-        };
+      const [name, nameAttr] = defineField("name");
+      const [product_code, productCodeAttr] = defineField("product_code");
+      const [category_product_id, categoryProductIdAttr] = defineField(
+          "category_product_id"
+      );
+      const [unit_product_id, unitProductIdAttr] =
+          defineField("unit_product_id");
+      const [stock, stockAttr] = defineField("stock");
+      const [minimum_stock_level, minimumStockLevelAttr] = defineField(
+          "minimum_stock_level"
+      );
+      const [maximum_stock_level, maximumStockLevelAttr] = defineField(
+          "maximum_stock_level"
+      );
+      const [unit_price, unitPriceAttr] = defineField("unit_price");
+      const [profit_margin, profitMarginAttr] = defineField("profit_margin");
+      const [unit_selling_price, unitSellingPriceAttr] = defineField("unit_selling_price");
+      const [img_product, imgProductAttr] = defineField("img_product");
+      const [description, descriptionAttr] = defineField("description");
 
-        const updateUnitProductId = (event) => {
-            unit_product_id.value = event.value ? event.value.id : null;
-        };
+      const updateCategoryProductId = (event) => {
+          category_product_id.value = event.value ? event.value.id : null;
+      };
 
-        const onFileSelect = (event) => {
-            if (event.files && event.files.length > 0) {
-                img_product.value = event.files[0];
-            } else {
-                img_product.value = null;
-            }
-        };
+      const updateUnitProductId = (event) => {
+          unit_product_id.value = event.value ? event.value.id : null;
+      };
 
-        const submitProduct = handleSubmit(async (datas, { resetForm }) => {
-            loading.value = true;
-            await productStore.addProduct(datas);
+      const onFileSelect = (event) => {
+          if (event.files && event.files.length > 0) {
+              img_product.value = event.files[0];
+          } else {
+              img_product.value = null;
+          }
+      };
 
-            if (productStore.errorAddedData) {
-                loading.value = false;
-                toast.add({
-                    severity: "error",
-                    life: 3000,
-                    summary: "Added Product Failed",
-                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
-                });
-            } else {
-                openDrawer.value = false;
-                loading.value = false;
-                resetForm();
-                toast.add({
-                    severity: "success",
-                    life: 3000,
-                    summary: "Added Product Successfully",
-                    detail: "Tambah Produk Berhasil",
-                });
-            }
-        });
+      /**
+       * 
+       * The 'value' / 'inputValue' context depends on the field being filled in
+       * 
+       * @param data 
+       * @param field 
+       * @param event 
+       */
+      const calculateMarginAndSellingPrice = (data = null, field, event) => {
+        const { value: inputValue } = event;
+        const unitPrice = unit_price.value ?? data?.unit_price;
+        
+        if (field === 'unit_price') {
+          const margin = profit_margin.value;
+          const sellingPrice = inputValue + (inputValue * (margin / 100));
+          unit_selling_price.value = sellingPrice;
 
-        const editingRows = ref([]);
-        const onRowEditSave = async (event) => {
-            loading.value = true;
-            let { newData, data } = event;
-            const updatedData = newData;
-            const filteredNewData = {};
+          if (data !== null) {
+            data.unit_selling_price = sellingPrice
+          }
+        } 
 
-            Object.keys(updatedData).forEach((key) => {
-                if (updatedData[key] !== data[key]) {
-                    filteredNewData[key] = updatedData[key];
-                }
-            });
+        if (field === 'profit_margin') {
+          const sellingPrice = unitPrice + (unitPrice * (inputValue / 100));
+          unit_selling_price.value = sellingPrice;
 
-            await productStore.updateDataProduct(filteredNewData, data.id);
-
-            if (productStore.errorUpdateData) {
-                toast.add({
-                    severity: "error",
-                    life: 3000,
-                    summary: "Update Product Failed",
-                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
-                });
-            } else {
-                toast.add({
-                    severity: "success",
-                    life: 3000,
-                    summary: "Update Product Successfully",
-                    detail: "Update Produk Berhasil",
-                });
-            }
-
-            loading.value = false;
-        };
-
-        const labelStatusProduct = ref('')
-        const iconStatusProduct = ref('')
-        const menuModel = computed(() => [
-            {
-                label: "Delete",
-                icon: "pi pi-fw pi-times",
-                command: () => showDialogDeleteProduct.value = true,
-            },
-            {
-                label: labelStatusProduct.value,
-                icon: iconStatusProduct.value,
-                command: () => setStatusProduct(selectedProduct),
-            },
-        ]);
-        const onRowContextMenu = (event) => {
-            if (event.data.isActive) {
-                labelStatusProduct.value = "Draft"
-                iconStatusProduct.value = "pi pi-fw pi-lock"
-            } else {
-                labelStatusProduct.value = "Active"
-                iconStatusProduct.value = "pi pi-fw pi-lock-open"
-            }
-            productStore.setInfoDeletedProduct(event.data.id, event.data.name)
-
-            cm.value.show(event.originalEvent);
-        };
-
-        const deleteProduct = async () => {
-            loading.value = true;
-            const productId = productStore.infoDeletedProduct.id
-            await productStore.deleteProduct(productId);
-
-            if (productStore.errorDeleteProduct) {
-                toast.add({
-                    severity: "error",
-                    life: 3000,
-                    summary: "Delete Product Failed",
-                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
-                });
-            } else {
-                productStore.clearInfoDeletedProduct()
-                showDialogDeleteProduct.value = false
-                toast.add({
-                    severity: "success",
-                    life: 3000,
-                    summary: "Delete Product Successfully",
-                    detail: "Produk Berhasil Di Hapus",
-                });
-            }
-
-            loading.value = false;
-        };
-
-        const setStatusProduct = async (prod) => {
-            loading.value = true;
-            const status = ref()
-            if (prod.value.isActive) {
-                status.value = 0
-            } else {
-                status.value = 1
-            }
-            await productStore.setStatus(status.value, prod.value.id);
-
-            if (productStore.errorUpdateData) {
-                toast.add({
-                    severity: "error",
-                    life: 3000,
-                    summary: "Update Status Product Failed",
-                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
-                });
-            } else {
-                toast.add({
-                    severity: "success",
-                    life: 3000,
-                    summary: "Update Status Product Successfully",
-                    detail: "Update Status Produk Berhasil",
-                });
-            }
-
-            loading.value = false;
+          if (data !== null) {
+            data.unit_selling_price = sellingPrice
+          }
         }
 
-        const showDetailProduct = (product) => {
-            selectedDialogProduct.value = product;
-            showDialogDetailProduct.value = true;
-        };
+        if (field === 'unit_selling_price') {
+          const profitMargin = ((inputValue - unitPrice) / unitPrice) * 100;
+          profit_margin.value = profitMargin;
 
-        const openDialogUpdateStock = (product_name, stock) => {
-            const mergeValue = { "product_name": product_name, stock }
-            selectedStock.value = mergeValue
-            
-            showDialogUpdateStock.value = true
-        }
+          if (data !== null) {
+            data.profit_margin = profitMargin;
+          }
+        }        
+      }
 
-        const updateStock = async () => {
-            const datas = {
-                stock: selectedStock.value.stock.stock,
-                minimum_stock_level: selectedStock.value.stock.minimum_stock_level,
-                maximum_stock_level: selectedStock.value.stock.maximum_stock_level,
-            }
+      const submitProduct = handleSubmit(async (datas, { resetForm }) => {
+          loading.value = true;
+          await productStore.addProduct(datas);
 
-            const validationStock = validateStockLevels(datas)
-            if (validationStock) {
-                toast.add(validationStock);
-                return;
-            }
+          if (productStore.errorAddedData) {
+              loading.value = false;
+              toast.add({
+                  severity: "error",
+                  life: 3000,
+                  summary: "Added Product Failed",
+                  detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+              });
+          } else {
+              openDrawer.value = false;
+              loading.value = false;
+              resetForm();
+              toast.add({
+                  severity: "success",
+                  life: 3000,
+                  summary: "Added Product Successfully",
+                  detail: "Tambah Produk Berhasil",
+              });
+          }
+      });
 
-            await productStore.updateStockProduct(datas, selectedStock.value.stock.id);
-            
+      const editingRows = ref([]);
+      const onRowEditSave = async (event) => {
+          loading.value = true;
+          let { newData, data } = event;
+          const updatedData = newData;
+          const filteredNewData = {};
 
-            if (productStore.errorUpdateStock) {
-                toast.add({
-                    severity: "error",
-                    life: 3000,
-                    summary: "Update Stock Product Failed",
-                    detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
-                });
-            } else {
-                showDialogUpdateStock.value = false
-                toast.add({
-                    severity: "success",
-                    life: 3000,
-                    summary: "Update Stock Product Successfully",
-                    detail: "Update Stok Produk Berhasil",
-                });
-            }
-            
-        }
+          Object.keys(updatedData).forEach((key) => {
+              if (updatedData[key] !== data[key]) {
+                  filteredNewData[key] = updatedData[key];
+              }
+          });
 
-        return {
-            products,
-            productStore,
-            totalRecords,
-            showDialogDetailProduct,
-            showDetailProduct,
-            selectedProduct,
-            selectedDialogProduct,
-            selectedCategory,
-            selectedUnit,
-            fileupload,
-            categories,
-            units,
-            clearFilter,
-            exportExcel,
-            exportPDF,
-            editingRows,
-            onRowEditSave,
-            menuModel,
-            onRowContextMenu,
-            cm,
-            expandedRows,
-            dataTable,
-            formatCurrencyIDR,
-            loading,
-            isExporting,
-            onPage,
-            searchQuery,
-            openDrawer,
-            name,
-            nameAttr,
-            product_code,
-            productCodeAttr,
-            category_product_id,
-            categoryProductIdAttr,
-            unit_product_id,
-            unitProductIdAttr,
-            unit_price,
-            unitPriceAttr,
-            stock,
-            stockAttr,
-            minimum_stock_level,
-            minimumStockLevelAttr,
-            maximum_stock_level,
-            maximumStockLevelAttr,
-            img_product,
-            imgProductAttr,
-            description,
-            descriptionAttr,
-            errors,
-            submitProduct,
-            updateCategoryProductId,
-            updateUnitProductId,
-            onFileSelect,
-            rows,
-            rowsPerPageOptions,
-            onRowsChange,
-            showDialogDeleteProduct,
-            deleteProduct,
-            showDialogUpdateStock,
-            openDialogUpdateStock,
-            selectedStock,
-            updateStock
-        };
-    },
+          await productStore.updateDataProduct(filteredNewData, data.id);
+
+          if (productStore.errorUpdateData) {
+              toast.add({
+                  severity: "error",
+                  life: 3000,
+                  summary: "Update Product Failed",
+                  detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+              });
+          } else {
+              toast.add({
+                  severity: "success",
+                  life: 3000,
+                  summary: "Update Product Successfully",
+                  detail: "Update Produk Berhasil",
+              });
+          }
+
+          loading.value = false;
+      };
+
+      const labelStatusProduct = ref('')
+      const iconStatusProduct = ref('')
+      const menuModel = computed(() => [
+          {
+              label: "Delete",
+              icon: "pi pi-fw pi-times",
+              command: () => showDialogDeleteProduct.value = true,
+          },
+          {
+              label: labelStatusProduct.value,
+              icon: iconStatusProduct.value,
+              command: () => setStatusProduct(selectedProduct),
+          },
+      ]);
+      const onRowContextMenu = (event) => {
+          if (event.data.isActive) {
+              labelStatusProduct.value = "Tidak Dijual"
+              iconStatusProduct.value = "pi pi-fw pi-lock"
+          } else {
+              labelStatusProduct.value = "Dijual"
+              iconStatusProduct.value = "pi pi-fw pi-lock-open"
+          }
+          productStore.setInfoDeletedProduct(event.data.id, event.data.name)
+
+          cm.value.show(event.originalEvent);
+      };
+
+      const deleteProduct = async () => {
+          loading.value = true;
+          const productId = productStore.infoDeletedProduct.id
+          await productStore.deleteProduct(productId);
+
+          if (productStore.errorDeleteProduct) {
+              toast.add({
+                  severity: "error",
+                  life: 3000,
+                  summary: "Delete Product Failed",
+                  detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+              });
+          } else {
+              productStore.clearInfoDeletedProduct()
+              showDialogDeleteProduct.value = false
+              toast.add({
+                  severity: "success",
+                  life: 3000,
+                  summary: "Delete Product Successfully",
+                  detail: "Produk Berhasil Di Hapus",
+              });
+          }
+
+          loading.value = false;
+      };
+
+      const setStatusProduct = async (prod) => {
+          loading.value = true;
+          const status = ref()
+          if (prod.value.isActive) {
+              status.value = 0
+          } else {
+              status.value = 1
+          }
+          await productStore.setStatus(status.value, prod.value.id);
+
+          if (productStore.errorUpdateData) {
+              toast.add({
+                  severity: "error",
+                  life: 3000,
+                  summary: "Update Status Product Failed",
+                  detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+              });
+          } else {
+              toast.add({
+                  severity: "success",
+                  life: 3000,
+                  summary: "Update Status Product Successfully",
+                  detail: "Update Status Produk Berhasil",
+              });
+          }
+
+          loading.value = false;
+      }
+
+      const showDetailProduct = (product) => {
+          selectedDialogProduct.value = product;
+          showDialogDetailProduct.value = true;
+      };
+
+      const openDialogUpdateStock = (product_name, stock) => {
+          const mergeValue = { "product_name": product_name, stock }
+          selectedStock.value = mergeValue
+          
+          showDialogUpdateStock.value = true
+      }
+
+      const updateStock = async () => {
+          const datas = {
+              stock: selectedStock.value.stock.stock,
+              minimum_stock_level: selectedStock.value.stock.minimum_stock_level,
+              maximum_stock_level: selectedStock.value.stock.maximum_stock_level,
+          }
+
+          const validationStock = validateStockLevels(datas)
+          if (validationStock) {
+              toast.add(validationStock);
+              return;
+          }
+
+          await productStore.updateStockProduct(datas, selectedStock.value.stock.id);
+          
+
+          if (productStore.errorUpdateStock) {
+              toast.add({
+                  severity: "error",
+                  life: 3000,
+                  summary: "Update Stock Product Failed",
+                  detail: "Ada kesalahan pada sisi server, mohon refresh browser.",
+              });
+          } else {
+              showDialogUpdateStock.value = false
+              toast.add({
+                  severity: "success",
+                  life: 3000,
+                  summary: "Update Stock Product Successfully",
+                  detail: "Update Stok Produk Berhasil",
+              });
+          }
+          
+      }
+
+      return {
+          products,
+          productStore,
+          totalRecords,
+          showDialogDetailProduct,
+          showDetailProduct,
+          selectedProduct,
+          selectedDialogProduct,
+          selectedCategory,
+          selectedUnit,
+          fileupload,
+          categories,
+          units,
+          clearFilter,
+          exportExcel,
+          exportPDF,
+          editingRows,
+          onRowEditSave,
+          menuModel,
+          onRowContextMenu,
+          cm,
+          expandedRows,
+          dataTable,
+          formatCurrencyIDR,
+          loading,
+          isExporting,
+          onPage,
+          searchQuery,
+          openDrawer,
+          name,
+          nameAttr,
+          product_code,
+          productCodeAttr,
+          category_product_id,
+          categoryProductIdAttr,
+          unit_product_id,
+          unitProductIdAttr,
+          unit_price,
+          unitPriceAttr,
+          profit_margin,
+          profitMarginAttr,
+          unit_selling_price,
+          unitSellingPriceAttr,
+          stock,
+          stockAttr,
+          minimum_stock_level,
+          minimumStockLevelAttr,
+          maximum_stock_level,
+          maximumStockLevelAttr,
+          img_product,
+          imgProductAttr,
+          description,
+          descriptionAttr,
+          errors,
+          submitProduct,
+          updateCategoryProductId,
+          updateUnitProductId,
+          onFileSelect,
+          rows,
+          rowsPerPageOptions,
+          onRowsChange,
+          showDialogDeleteProduct,
+          deleteProduct,
+          showDialogUpdateStock,
+          openDialogUpdateStock,
+          selectedStock,
+          updateStock,
+          calculateMarginAndSellingPrice
+      };
+  },
 };
 </script>

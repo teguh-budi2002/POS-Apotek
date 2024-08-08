@@ -27,6 +27,8 @@ class ProductRequest extends BaseFormRequest
             'product_code' => 'required|unique:products,product_code',
             'name' => 'required',
             'unit_price' => 'required|numeric',
+            'profit_margin' => 'required|numeric',
+            'unit_selling_price' => 'required|numeric',
             'description' => 'nullable|string',
             'img_product' => 'required|file|max:2048|mimes:png,jpg,webp',
             'stock' => 'required|numeric',
@@ -39,6 +41,8 @@ class ProductRequest extends BaseFormRequest
             $rules['product_code'] = 'nullable|unique:products,product_code,' . $this->id;
             $rules['name'] = 'nullable|string|max:255';
             $rules['unit_price'] = 'nullable|numeric|min:0';
+            $rules['profit_margin'] = 'nullable|numeric|min:0';
+            $rules['unit_selling_price'] = 'nullable|numeric|min:0';
             $rules['description'] = 'nullable|string';
             $rules['img_product'] = 'nullable|file|max:2048|mimes:png,jpg,webp';
             $rules['stock'] = 'nullable|numeric';
@@ -59,8 +63,16 @@ class ProductRequest extends BaseFormRequest
             ],
             'name.required' => 'Nama wajib diisi.',
             'unit_price' => [
-                'required' => 'Harga wajib diisi.',
-                'numeric' => 'Harga harus berupa angka.'
+                'required' => 'Harga pembelian produk (satuan) wajib diisi.',
+                'numeric' => 'Harga pembelian produk (satuan) harus berupa angka.'
+            ],
+            'profit_margin' => [
+                'required' => 'Profit Margin wajib diisi.',
+                'numeric' => 'Profit Margin harus berupa angka.'
+            ],
+            'unit_selling_price' => [
+                'required' => 'Harga penjualan product (satuan) wajib diisi.',
+                'numeric' => 'Harga penjualan product (satuan) harus berupa angka.'
             ],
             'stock' => [
                 'required' => 'Stok produk wajib diisi.',

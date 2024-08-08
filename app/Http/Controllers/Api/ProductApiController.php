@@ -24,6 +24,8 @@ class ProductApiController extends Controller
             'product_code',
             'name',
             'unit_price',
+            'profit_margin',
+            'unit_selling_price',
             'description',
             'img_product',
             'isActive'  
@@ -80,6 +82,29 @@ class ProductApiController extends Controller
             ? $this->responseJson($products, 200, "Berhasil Mengambil Daftar Produk")
             : $this->responseJson(404, "Tidak Ada Daftar Produk");
     }
+
+    public function getListProductsByFilterPurchasedProduct(Request $request) {
+        $searchQuery = $request->search;
+
+        if (!is_null($searchQuery)) {
+            $products = Product::with(['unit' => function($q) {
+                                    $q->select("id", "name")->isActive();
+                                }])
+                                ->select("id", "unit_product_id", "product_code", "name", "unit_price")
+                                ->isActive()
+                                ->filterProductWithoutDescription($request->search)
+                                ->orderByDesc("name")
+                                ->take(10)
+                                ->get();
+    
+            return $products->isNotEmpty()
+                ? $this->responseJson($products, 200, "Berhasil Mengambil Daftar Produk by Filtered Purchased Product")
+                : $this->responseJson(404, "Tidak Ada Daftar Produk");
+        } else {
+            return $this->responseJson(200, "Silahkan Masukkan Kata Kunci");
+        }
+    }
+
     public function getProductsPerPage(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);

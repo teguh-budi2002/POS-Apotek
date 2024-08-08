@@ -17,6 +17,8 @@ class Product extends Model
         'product_code',
         'name',
         'unit_price',
+        'profit_margin',
+        'unit_selling_price',
         'description',
         'img_product',
         'isActive'
@@ -48,6 +50,10 @@ class Product extends Model
                     ->withTimestamps();
     }
 
+    public function scopeIsActive($query) {
+        return $query->where('isActive', 1);
+    }
+
     public function scopeFilterProduct($query, $filter) {
         $query->when($filter ?? false, function($query, $filter) {
             return $query->where(function($query) use($filter) {
@@ -57,6 +63,15 @@ class Product extends Model
                         ->orWhereRaw('MATCH(description) AGAINST (? IN NATURAL LANGUAGE MODE)', [$filter])
                         ->orderByDesc("name");
 
+        });
+    }
+
+    public function scopeFilterProductWithoutDescription($query, $filter) {
+        $query->when($filter ?? false, function($query, $search) {
+            return $query->where(function($query) use($search) {
+                $query->where('product_code', 'like', '%' . $search . '%')
+                        ->orWhere('name', 'like', '%' . $search . '%');  
+            });
         });
     }
 }

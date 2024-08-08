@@ -16,21 +16,21 @@ class ProductSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
         
-        for ($i=0; $i <= 100; $i++) { 
-            $productCreated = Product::create([
-                'product_code' => 'A-' . $faker->numberBetween(4, 100),
-                'name' => 'Product' . $faker->name,
-                'category_product_id' => 1,
-                'unit_product_id' => 1,
-                'img_product' => 'komik.jpg',
-                'unit_price' => $faker->randomNumber(7, true),
-            ]);
-            
-            $productCreated->stock()->create([
-                'product_id' => $productCreated->id,
-                'stock' => $faker->numberBetween(10, 100),
-                'minimum_stock_level' => $faker->numberBetween(1, 20),
-            ]);
-        }
+        $productCreated = Product::create([
+            'product_code' => 'A-001',
+            'name' => 'Product A',
+            'category_product_id' => 1,
+            'unit_product_id' => 1,
+            'img_product' => 'komik.jpg',
+            'unit_price' => 1000,
+            'profit_margin' => 20,
+            'unit_selling_price' => 1200,
+        ]);
+        
+        $productCreated->stock()->create([
+            'product_id' => $productCreated->id,
+            'stock' => $faker->numberBetween(10, 100),
+            'minimum_stock_level' => $faker->numberBetween(1, 20),
+        ]);
     }
 }
