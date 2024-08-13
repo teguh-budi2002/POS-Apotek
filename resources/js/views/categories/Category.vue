@@ -2,6 +2,9 @@
     <Content>
         <template v-slot:content>
             <Toast />
+						<div>
+                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" />
+            </div>
             <div
                 class="main-content-category bg-white rounded-md shadow-md w-full card p-4"
             >
@@ -306,7 +309,14 @@ export default {
             "Nama Kategori",
         ])
         const rows = ref(10)
-        const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
+				const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
+				const breadcrumbIcon = ref({
+						icon: 'pi pi-chart-bar'
+				})
+				const breadcrumbItems = ref([
+						{ label: 'Dashboard' }, 
+						{ label: 'Data Kategori' }, 
+				]);
 
         onMounted(async () => {
             searchQuery.value = categoryStore.filters.search || ''
@@ -619,7 +629,9 @@ export default {
             rowsPerPageOptions,
             onRowsChange,
             showTrashedCategoriesDialog,
-            restoreCategory
+						restoreCategory,
+						breadcrumbIcon,
+						breadcrumbItems,
         };
     },
 };

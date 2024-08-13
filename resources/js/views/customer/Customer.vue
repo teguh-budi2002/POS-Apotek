@@ -2,6 +2,9 @@
     <Content>
         <template v-slot:content>
             <Toast />
+            <div>
+                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" />
+            </div>
             <div
                 class="main-content-customer bg-white rounded-md shadow-md w-full card p-4"
             >
@@ -374,13 +377,18 @@ export default {
         ])
         const rows = ref(10)
         const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
-        const isMounted = ref(false);
+        const breadcrumbIcon = ref({
+            icon: 'pi pi-chart-bar'
+        })
+        const breadcrumbItems = ref([
+            { label: 'Dashboard' }, 
+            { label: 'Data Customer' }, 
+        ]);
 
         onMounted(async () => {
             searchQuery.value = customerStore.filters.search || ''
             await loadCustomers();
             await loadTrashedCustomers();
-            isMounted.value = true;
         });
 
         const loadCustomers = async (page = 1, rowsPerPage = rows.value) => {
@@ -658,7 +666,9 @@ export default {
             onRowsChange,
             showTrashedCustomerDialog,
             restoreCustomer,
-            updateGender
+            updateGender,
+            breadcrumbIcon,
+            breadcrumbItems,
         };
     },
 };

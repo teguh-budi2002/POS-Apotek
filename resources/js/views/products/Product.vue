@@ -2,6 +2,9 @@
     <Content>
         <template v-slot:content>
             <Toast />
+            <div>
+                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" />
+            </div>
             <div
                 class="main-content-product bg-white rounded-md shadow-md w-full card p-4"
             >
@@ -787,6 +790,13 @@ export default {
       ])
       const rows = ref(10)
       const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
+      const breadcrumbIcon = ref({
+          icon: 'pi pi-chart-bar'
+      })
+      const breadcrumbItems = ref([
+          { label: 'Dashboard' }, 
+          { label: 'Data Produk' }, 
+      ]);
 
       onMounted(async () => {
           searchQuery.value = productStore.filters.search || '';
@@ -1277,7 +1287,9 @@ export default {
           openDialogUpdateStock,
           selectedStock,
           updateStock,
-          calculateMarginAndSellingPrice
+          calculateMarginAndSellingPrice,
+          breadcrumbIcon,
+          breadcrumbItems,
       };
   },
 };

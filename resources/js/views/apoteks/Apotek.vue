@@ -2,6 +2,9 @@
     <Content>
         <template v-slot:content>
             <Toast />
+            <div>
+                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" class="!bg-transparent"/>
+            </div>
             <div
                 class="main-content-apotek bg-white rounded-md shadow-md w-full card p-4"
             >
@@ -463,13 +466,18 @@ export default {
         ])
         const rows = ref(10)
         const rowsPerPageOptions = ref([5, 10, 20, 30, 40, 50, 100])
-        const isMounted = ref(false);
+        const breadcrumbIcon = ref({
+            icon: 'pi pi-chart-bar'
+        })
+        const breadcrumbItems = ref([
+            { label: 'Dashboard' }, 
+            { label: 'Data Apotek' }, 
+        ]);
 
         onMounted(async () => {
             searchQuery.value = apotekStore.filters.search || ''
             await loadApoteks();
             await loadTrashedApoteks();
-            isMounted.value = true;
         });
 
         const loadApoteks = async (page = 1, rowsPerPage = rows.value) => {
@@ -764,7 +772,9 @@ export default {
             rowsPerPageOptions,
             onRowsChange,
             showTrashedApotekDialog,
-            restoreApotek
+            restoreApotek,
+            breadcrumbIcon,
+            breadcrumbItems,
         };
     },
 };
