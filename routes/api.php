@@ -20,6 +20,7 @@ Route::post('logout',[LogoutController::class, 'logout']);
 
 Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ApotekApiController::class, 'getAllApotek']);
+  Route::get('/get-apotek/by-specifiec-column', [ApotekApiController::class, 'getApotekOnlySpecificColumn']);
   Route::get('/pagination', [ApotekApiController::class, 'getPaginateApoteks']);
   Route::get('/trashed', [ApotekApiController::class, 'getTrashedApoteks']);
   Route::post('restore-apotek/{id}', [ApotekApiController::class, 'restoreTrashedApotek']);
@@ -30,6 +31,7 @@ Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('supplier')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [SupplierApiController::class, 'getAllSupplier']);
+  Route::get('/get-supplier/by-specifiec-column', [SupplierApiController::class, 'getSupplierOnlySpecificColumn']);
   Route::get('/pagination', [SupplierApiController::class, 'getPaginateSuppliers']);
   Route::get('/trashed', [SupplierApiController::class, 'getTrashedSuppliers']);
   Route::post('restore-supplier/{id}', [SupplierApiController::class, 'restoreTrashedSupplier']);
@@ -50,6 +52,7 @@ Route::prefix('customer')->middleware('auth:sanctum')->group(function() {
 
 Route::prefix('product')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ProductApiController::class, 'getAllProducts']);
+  Route::get('/get-list-product/by-specific-column', [ProductApiController::class, 'getListProductBySpecificColumn']);
   Route::get('/pagination', [ProductApiController::class, 'getProductsPerPage']);
   Route::post('add-product',[ProductApiController::class, 'addProduct']);
   Route::patch('edit-product/{product:id}',[ProductApiController::class, 'editProduct']);

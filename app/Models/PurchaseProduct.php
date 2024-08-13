@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Ramsey\Uuid\Uuid;
 
 class PurchaseProduct extends Model
 {
@@ -61,12 +62,20 @@ class PurchaseProduct extends Model
     }
 
     public function setReferenceNumberAttribute($value) {
-        do {
-            $time = Carbon::now()->format('Y');
-            $randString = strtoupper(Str::random(8));
-            $reference_number = "REF-{$randString}.{$time}";
-        } while (PurchaseProduct::where('reference_number', $reference_number)->exists());
+        if (empty($value)) {
+            do {
+                $time = Carbon::now()->format('Y');
+                $randString = strtoupper(Str::substr(Uuid::uuid4()->toString(), 0, 8));
+                $reference_number = "REF-{$randString}.{$time}";
+            } while (PurchaseProduct::where('reference_number', $reference_number)->exists());
+    
+            return $this->attributes['reference_number'] = $reference_number;
+        } else {
+            return $this->attributes['reference_number'] = $value;
+        }
+    }
 
-        return $this->attributes['reference_number'] = $reference_number;
+    public function setOrderDateAttribute($value) {
+        return $this->attributes['order_date'] = Carbon::parse($value)->format('Y-m-d H:i:s');
     }
 }

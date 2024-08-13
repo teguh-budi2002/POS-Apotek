@@ -38,6 +38,22 @@ const routes = [
                 name: "unit",
                 component: () => import("../views/units/Unit.vue"),
             },
+            {
+                path: "pembelian-produk",
+                name: "purchased-product",
+                children: [
+                    {
+                        path: 'data-pembelian',
+                        name: 'purchased-product.data-purchased',
+                        component: () => import("../views/purchased_products/PurchasedProduct.vue")
+                    },
+                    {
+                        path: 'tambah-data-pembelian',
+                        name: 'purchased-product.add-data-purchased',
+                        component: () => import("../views/purchased_products/AddPurchasedProduct.vue")
+                    }
+                ]
+            },
         ],
     },
     {

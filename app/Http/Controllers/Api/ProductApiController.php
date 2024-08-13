@@ -83,14 +83,16 @@ class ProductApiController extends Controller
             : $this->responseJson(404, "Tidak Ada Daftar Produk");
     }
 
-    public function getListProductsByFilterPurchasedProduct(Request $request) {
+    public function getListProductBySpecificColumn(Request $request) {
         $searchQuery = $request->search;
+        $columns = $request->customColumn;
+        array_unshift($columns, "id");
 
         if (!is_null($searchQuery)) {
             $products = Product::with(['unit' => function($q) {
                                     $q->select("id", "name")->isActive();
                                 }])
-                                ->select("id", "unit_product_id", "product_code", "name", "unit_price")
+                                ->select($columns)
                                 ->isActive()
                                 ->filterProductWithoutDescription($request->search)
                                 ->orderByDesc("name")

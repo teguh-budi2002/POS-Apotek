@@ -50,6 +50,16 @@ class SupplierApiController extends Controller
             : $this->responseJson(404, "Tidak Ada Daftar Supplier");
     }
 
+    public function getSupplierOnlySpecificColumn(Request $request) {
+        $columns = $request->customColumn;
+        array_unshift($columns, "id");
+        $suppliers = Supplier::select($columns)->get();
+
+        return $suppliers->isNotEmpty()
+            ? $this->responseJson($suppliers, 200, "Berhasil Mengambil Daftar Supplier")
+            : $this->responseJson(404, "Tidak Ada Daftar Supplier");
+    }
+
      public function getPaginateSuppliers(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);

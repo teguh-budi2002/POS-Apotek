@@ -25,30 +25,25 @@ class PurchaseProductRequest extends BaseFormRequest
             'apotek_id' => 'required',
             'supplier_id' => 'required',
             'reference_number' => 'unique:purchase_products,reference_number',
+            'productData.*.total_price' => 'required',
             'grand_total' => 'required|numeric',
-            'sub_total' => 'required|numeric',
-            'qty' => 'required|array',
-            'qty.*' => 'numeric',
-            'price_after_discount' => 'nullable|numeric',
-            'unit_price' => 'required',
-            'profit_margin' => 'required|array',
-            'profit_margin.*' => 'numeric',
+            'qty' => 'nullable|array',
+            'price_after_discount' => 'nullable|array',
+            'productData.*.selling_price' => 'required',
+            'productData.*.profit_margin' => 'required',
             'discount' => 'nullable|array',
-            'discount.*' => 'numeric',
-            'expired_date' => 'required|array',
-            'expired_date.*' => 'date',
+            'productData.*.expired_date_product' => 'required',
             'payment_method' => 'required',
-            'status_payment' => 'required',
+            'status_payment' => 'nullable',
             'order_date' => 'required|date',
+            'status_order' => 'required',
             'paid_on' => 'nullable|date',
             'tax' => 'nullable|array',
-            'tax.*' => 'numeric',
             'shipping_cost' => 'nullable|numeric',
             'shipping_details' => 'nullable|string',
             'order_notes' => 'nullable|string',
-            'proof_of_payment' => 'nullable|file|max:2048|mimes:png,jpg,webp',
             'termin_payment' => 'nullable|numeric',
-            'payment_invoice' => 'required|file|max:2048|mimes:docx,png,jpg'
+            'proof_of_payment' => 'nullable|file|max:2048|mimes:docx,png,jpg'
         ];
     }
 
@@ -61,37 +56,23 @@ class PurchaseProductRequest extends BaseFormRequest
                 'unique' => 'Nomor Referensi harus bersfiat unik.'
             ],
             'grand_total' => [
-                'required' => 'Grand Total tidak boleh kosong.',
-                'numeric' => 'Grand Total harus berupa angka.'
+                'required' => 'Grand Total (Total Harga) tidak boleh kosong.',
+                'numeric' => 'Grand Total (Total Harga) harus berupa angka.'
             ],
-            'sub_total' => [
-                'required' => 'Sub Total tidak boleh kosong.',
-                'numeric' => 'Sub Total harus berupa angka.'
-            ],
-            'qty.required' => 'Cantumkan quantity pada produk.',
-            'qty.*.numeric' => 'Quantity harus berupa angka.',
             'price_after_discount' => [
                 'numeric' => 'Harga setelah diskon harus berupa angka.'
             ],
-            'unit_price.required' => 'Harga jual per unit tidak boleh kosong.',
-            'profit_margin.required' => 'Profit margin tidak boleh kosong.',
-            'profit_margin.*.numeric' => 'Profit margin harus berupa angka.',
-            'discount.*.numeric' => 'Diskon harus berupa angka.',
-            'expired_date.required' => 'Cantumkan masa kadaluarsa pada produk.',
-            'expired_date.*.date' => 'Format tanggal tidak valid.',
+            'productData.*.selling_price.required' => 'Harga jual per unit tidak boleh kosong.',
+            'productData.*.profit_margin.required' => 'Profit margin tidak boleh kosong.',
+            'productData.*.expired_date_product.required' => 'Cantumkan masa kadaluarsa pada produk.',
+            'productData.*.total_price.required' => 'Total harga setiap produk wajib diisi.',
             'payment_method.required' => 'Metode pembayaran tidak boleh kosong.',
             'status_payment.required' => 'Status pembayaran tidak boleh kosong.',
             'order_date.required' => 'Tentukan tanggal order.',
-            'tax.*.numeric' => 'Pajak harus berupa angka.',
+            'status_order.required' => 'Tentukan status order.',
             'shipping_cost.numeric' => 'Pajak pengiriman harus berupa angka.',
-            'proof_of_payment' => [
-                'file' => 'Bukti pembayaran harus berupa file gambar.',
-                'uploaded' => 'Maksimal ukuran gambar adalah 2Mb.',
-                'mimes' => 'Ekstensi yang di izinkan (jpg,png,webp).'
-            ],
             'termin_payment.numeric' => 'Format termin harus berupa angka.',
-            'payment_invoice' => [
-                'required' => 'Faktur pembelian wajib di upload.',
+            'proof_of_payment' => [
                 'uploaded' => 'Maksimum ukuran berkas sebesar 2mb',
                 'mimes' => 'Ekstensi file yang di-izinkan docx,jpg,png'
             ]

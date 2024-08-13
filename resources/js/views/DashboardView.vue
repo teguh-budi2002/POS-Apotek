@@ -1,5 +1,6 @@
 <template>
-    <div class="w-full min min-h-screen h-full overflow-x-hidden bg-gray-100">
+    <div class="w-full min min-h-screen h-full overflow-x-hidden">
+        <div class="custom-bg-clip"></div>
         <div class="flex">
             <!-- Sidebar -->
             <Sidebar
@@ -94,5 +95,36 @@ export default {
 }
 .content-collapsed {
     margin-left: 3rem;
+}
+
+.custom-bg-clip {
+  background-color: #022f45;
+  clip-path: polygon(55% 0%, 100% 0%, 100% 100%, 45% 100%);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 #edf2f7;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+   width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #4a5568;
+    border-radius: 10px;
+    border: 2px solid #edf2f7;
+}
+
+/* Fileupload PrimeVue Style */
+div.p-fileupload-header > button.p-button.p-component.p-button-secondary.p-fileupload-upload-button {
+  display: none !important;
 }
 </style>

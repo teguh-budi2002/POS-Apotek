@@ -50,6 +50,16 @@ class ApotekApiController extends Controller
             : $this->responseJson(404, "Tidak Ada Daftar Apotek");
     }
 
+    public function getApotekOnlySpecificColumn(Request $request) {
+        $columns = $request->customColumn;
+        array_unshift($columns, "id");
+        $apoteks = Apotek::select($columns)->get();
+
+        return $apoteks->isNotEmpty()
+            ? $this->responseJson($apoteks, 200, "Berhasil Mengambil Daftar Apotek")
+            : $this->responseJson(404, "Tidak Ada Daftar Apotek");
+    }
+
     public function getPaginateApoteks(Request $request) {
         $perPage = $request->get('rows', 10);
         $page = $request->get('page', 1);
