@@ -96,6 +96,7 @@ Route::prefix('ordered-product')->middleware('auth:sanctum')->group(function() {
   // Ordered Purchased Product into Supplier
   Route::post('purchase-product', [PurchaseApiController::class, 'purchasedProduct']);
   Route::get('get-all-purchased-product', [PurchaseApiController::class, 'getAllPurchasedProduct']);
+  Route::get('get-paginate-purchased-product', [PurchaseApiController::class, 'getPaginatePurchasedProduct']);
 
   // Ordered Sales Product Into Customer
   Route::post('sales-product', [SalesApiController::class, 'salesProduct']);

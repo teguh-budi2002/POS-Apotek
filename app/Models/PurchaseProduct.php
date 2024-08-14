@@ -29,6 +29,7 @@ class PurchaseProduct extends Model
         'status_payment',
         'order_date',
         'paid_on',
+        'cash_paid',
         'tax',
         'shipping_cost',
         'shipping_details',
@@ -56,9 +57,8 @@ class PurchaseProduct extends Model
 
     public function purchasedProducts() {
         return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id')
-                    ->as('product')
-                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'expired_date_product')
-                    ->withTimestamps();
+                    ->as('productDetail')
+                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'expired_date_product', 'sub_total');
     }
 
     public function setReferenceNumberAttribute($value) {
@@ -66,16 +66,20 @@ class PurchaseProduct extends Model
             do {
                 $time = Carbon::now()->format('Y');
                 $randString = strtoupper(Str::substr(Uuid::uuid4()->toString(), 0, 8));
-                $reference_number = "REF-{$randString}.{$time}";
+                $reference_number = "REF-{$randString}-{$time}";
             } while (PurchaseProduct::where('reference_number', $reference_number)->exists());
     
             return $this->attributes['reference_number'] = $reference_number;
         } else {
-            return $this->attributes['reference_number'] = $value;
+            return $this->attributes['reference_number'] = "REF-{$value}";
         }
     }
 
     public function setOrderDateAttribute($value) {
-        return $this->attributes['order_date'] = Carbon::parse($value)->format('Y-m-d H:i:s');
+        return $this->attributes['order_date'] = Carbon::parse($value)->toDateTimeString();
+    }
+
+    public function setPaidOnAttribute($value) {
+        return $this->attributes['paid_n'] = Carbon::parse($value)->toDateTimeString();
     }
 }

@@ -101,6 +101,9 @@
                 showIcon 
                 showButtonBar
                 fluid
+                dateFormat="dd/mm/yy"
+                showTime 
+                hourFormat="24"
                 v-model="order_date"
                 v-bind="orderDateAttr" 
               />
@@ -116,8 +119,12 @@
               <div class="flex justify-start">
                 <FileUpload 
                   class="!bg-slate-900 hover:!bg-slate-700"
-                  v-model="proof_of_payment" 
-                  :maxFileSize="2048000" 
+                  v-model="proof_of_payment"
+                  chooseLabel="Unggah"
+                  cancelLabel="Hapus"
+                  chooseIcon="pi pi-upload"
+                  :maxFileSize="2048000"
+                  invalidFileSizeMessage="Maksimal ukuran file: 2MB" 
                   :multiple="false"
                   :fileLimit="1"
                   @select="handleSelectOnFileUpload" 
@@ -330,7 +337,7 @@
                       showIcon
                       fluid
                       :inputId="`expired_date_of${product.id}`"
-                      @input="(value) => handleExpiredDateProduct('expired_date_product', product.id, value)"
+                      @change="(value) => handleExpiredDateProduct('expired_date_product', product.id, value)"
                     />
                   </td>
                 </tr>
@@ -380,7 +387,7 @@
             </InputGroup>
           </div>
           <div>
-            <label for="shiping_cost" class="block mb-2 text-slate-500 font-semibold">
+            <label for="shipping_cost" class="block mb-2 text-slate-500 font-semibold">
               Biaya Pengiriman
               <span class="text-rose-500 font-normal text-sm">(Opsional)</span>
             </label>
@@ -389,10 +396,10 @@
                 <i class="pi pi-truck"></i>
               </InputGroupAddon>
               <InputNumber 
-                v-model="shiping_cost"
+                v-model="shipping_cost"
                 v-bind="shipingCostAttr"
                 @blur="calculateCostShippingIntoTotalPrice" 
-                inputId="shiping_cost" 
+                inputId="shipping_cost" 
                 class="w-full"
                 fluid
               />
@@ -465,7 +472,6 @@
                     v-bind="cashPaidAttr"
                     prefix="Rp "
                     placeholder="Nominal Uang Tunai Yang Dibayar"
-                    class="termin-input"
                   />
                 </InputGroup>
               </div>
@@ -486,10 +492,13 @@
                   <label for="paid_on" class="mb-2 block font-semibold text-slate-500">Dibayar Pada</label>
                   <DatePicker 
                     class="w-full"
-                    placeholder="Tentukan tanggal pembelian"
+                    placeholder="Tentukan tanggal kapan order dibayar"
                     showIcon 
                     showButtonBar
                     fluid
+                    dateFormat="dd/mm/yy"
+                    showTime 
+                    hourFormat="24"
                     v-model="paid_on" 
                     v-bind="paidOnAttr"
                   />
@@ -673,7 +682,7 @@ export default {
         format_terim_date: yup.string().nullable(),
         cash_paid: yup.number().nullable(),
         status_payment: yup.string().nullable(),
-        shiping_cost: yup.number().nullable(),
+        shipping_cost: yup.number().nullable(),
         shipping_details: yup.string().nullable(),
         order_note: yup.string().nullable(),
         proof_of_payment: yup.mixed().required("Bukti pembayaran wajib diunggah.")
@@ -681,7 +690,7 @@ export default {
                               .test('file-type', 'Ekstensi file tidak valid.', (value) => isValidExtension(value)),
       },
       initialValues: {
-        shiping_cost: 0
+        shipping_cost: 0
       }
     })
 
@@ -696,7 +705,7 @@ export default {
     const [paid_on, paidOnAttr] = defineField('paid_on');
     const [apotek_id, apotekIdAttr] = defineField('apotek_id');
     const [supplier_id, supplierIdAttr] = defineField('supplier_id');
-    const [shiping_cost, shipingCostAttr] = defineField('shiping_cost');
+    const [shipping_cost, shipingCostAttr] = defineField('shipping_cost');
     const [shipping_details, shippingDetailsAttr] = defineField('shipping_details');
     const [order_note, orderNoteAttr] = defineField('order_note');
     const [proof_of_payment, proofOfPaymentAttr] = defineField('proof_of_payment');
@@ -755,7 +764,7 @@ export default {
      * @param {Object} datas - The data for the purchased product.
      * @returns {Promise<void>} - A promise that resolves when the purchased product is added successfully.
      */
-    const submitPurchasedProduct = handleSubmit(async (datas) => {      
+    const submitPurchasedProduct = handleSubmit(async (datas) => { 
       loading.value = true
       const productIds = purchasedProductStore.productIds
 
@@ -800,7 +809,7 @@ export default {
         termin_payment: datas.termin_payment,
         cash_paid: datas.cash_paid,
         status_payment: datas.status_payment,
-        shiping_cost: datas.shiping_cost,
+        shipping_cost: datas.shipping_cost,
         shipping_details: datas.shipping_details,
         order_note: datas.order_note,
         proof_of_payment: datas.proof_of_payment,
@@ -853,7 +862,7 @@ export default {
         });
       } else {
         loading.value = false
-        router.push({name: 'purchased-product', params: { addedPurchasedProducts: true }})
+        router.push({name: 'purchased-product.data-purchased', params: { addedPurchasedProducts: true }})
       }            
     })
 
@@ -961,7 +970,7 @@ export default {
       }
 
       countTotalItemAndPriceValues()
-      totalPriceItems.value = totalPriceItems.value + shiping_cost.value;
+      totalPriceItems.value = totalPriceItems.value + shipping_cost.value;
     }
 
     let previousShippingCost = 0;
@@ -1024,7 +1033,7 @@ export default {
       selling_price,
       batch_number,
       expired_date_product,
-      shiping_cost,
+      shipping_cost,
       shipingCostAttr,
       shipping_details,
       shippingDetailsAttr,

@@ -3,11 +3,13 @@ import apiServices from "../services/api";
 
 export const usePurchasedProductStore = defineStore("usePurchasedProductStore", {
   state: () => ({
+    listOrderPurchasedProduct: [],
     listProducts: [],
     listProductSelected: [],
     listApoteks: [],
     listSuppliers: [],
     productIds: [],
+    detailPurchasedProduct: {},
     errorGetData: false,
     errorAddedData: false,
     productDoesntHaveDefaultStockError: false,
@@ -17,6 +19,26 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     }
   }),
   actions: {
+    async getListOrderPurchasedProduct(rows = 10) {
+      this.errorGetData = false;
+      try {
+        const response = await apiServices.get("ordered-product/get-paginate-purchased-product", {
+          rows,
+          params: {
+            ...this.filters
+          }
+        });        
+
+        if (response.data.status_code === 200) {
+          this.listOrderPurchasedProduct = response.data.datas.purchasedProducts.data;
+        }
+      } catch (error) {
+        this.errorGetData = true;        
+        if (error?.response?.data?.status_code === 404) {
+          this.listOrderPurchasedProduct = [];
+        }
+      }
+    },
     async getListProductsBySpecificColumn(column = ["unit_product_id", "product_code", "name", "unit_price", "profit_margin", "unit_selling_price"]) {
       this.errorGetData = false;
       try {
@@ -118,6 +140,9 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     },
     setProductIds(id) {
       this.productIds.push(id);
+    },
+    setSelectedPurchasedProduct(purchasedProduct) { 
+      this.detailPurchasedProduct = purchasedProduct;
     }
   },
   persist: true

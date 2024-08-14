@@ -9,7 +9,6 @@ use App\Models\PurchaseProduct;
 use App\Models\StockProduct;
 use App\StatusOrder;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -59,6 +58,8 @@ class PurchaseApiController extends Controller
                 'status_order' => $request->status_order,
                 'payment_method' => $request->payment_method,
                 'status_payment' => $request->status_payment,
+                'cash_paid' => $request->cash_paid,
+                'paid_on' => $request->paid_on,
                 'order_date' => $request->order_date,
                 'shipping_cost' => $request->shipping_cost,
                 'shipping_details' => $request->shipping_details,
@@ -85,7 +86,7 @@ class PurchaseApiController extends Controller
                     'sub_total' => $request->productData[$productId]['total_price'],
                     'price_after_discount' => $request->productData[$productId]['price_after_discount'],
                     'profit_margin' => $request->productData[$productId]['profit_margin'],
-                    'expired_date_product' => Carbon::parse($request->productData[$productId]['expired_date'])->format("Y-m-d")
+                    'expired_date_product' => Carbon::parse($request->productData[$productId]['expired_date_product'])->format("Y-m-d")
                 ];
             }
             
@@ -109,6 +110,34 @@ class PurchaseApiController extends Controller
 
         $purchasedProducts->isNotEmpty()
             ? $this->responseJson($purchasedProducts, 200, "Berhasil mengambil daftar order produk")
+            : $this->responseJson(404, "Tidak Ada Daftar Order Produk");
+    }
+
+    public function getPaginatePurchasedProduct(Request $request){
+        $perPage = $request->get('rows', 10);
+        $purchasedProducts = PurchaseProduct::with([
+            'purchasedProducts' => function($query) {
+                $query->join('unit_products', 'products.unit_product_id', 'unit_products.id')
+                ->select(
+                    'products.id',
+                    'products.name',
+                    'products.product_code',
+                    'products.img_product',
+                    'products.unit_price',
+                    'unit_products.id as unit_product_id',
+                    'unit_products.name AS unit_product_name'
+                );
+            },
+            'apotek' => function($query) {
+                $query->select('apoteks.id', 'apoteks.name_of_apotek', 'apoteks.address', 'apoteks.contact_phone');
+            },
+            'supplier' => function($query) {
+                $query->select('suppliers.id', 'suppliers.supplier_name', 'suppliers.address', 'suppliers.contact_phone');
+            }
+        ])->cursorPaginate($perPage);
+
+        return $purchasedProducts->isNotEmpty()
+            ? $this->responseJson(['purchasedProducts' => $purchasedProducts], 200, "Berhasil mengambil daftar order produk")
             : $this->responseJson(404, "Tidak Ada Daftar Order Produk");
     }
 }

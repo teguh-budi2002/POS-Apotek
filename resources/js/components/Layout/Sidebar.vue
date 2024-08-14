@@ -237,7 +237,7 @@
             </router-link>
         </div>
         <!-- Dropdown Menu -->
-        <!-- <div class="rounded-md group">
+        <div class="rounded-md group">
             <div
                 class="p-3 flex justify-between items-center transition-all duration-200 cursor-pointer"
                 :class="[isSidebarExpanded ? 'w-full delay-500' : 'w-12']"
@@ -245,7 +245,7 @@
             >
                 <div class="flex items-center">
                     <i
-                        class="fas fa-layer-group fa-lg text-gray-400 group-hover:text-gray-100 transition-colors duration-200"
+                        class="fas fa-chart-simple rotate-180 fa-lg text-red-500 group-hover:text-rose-400 transition-colors duration-200"
                     ></i>
                     <div
                         :class="[
@@ -255,9 +255,10 @@
                         ]"
                     >
                         <span
-                            class="text-gray-400 group-hover:text-gray-100 ml-3 transition-color duration-200"
+                            class="group-hover:text-gray-100 ml-3 transition-color duration-200"
+                            :class="[$route.name === 'purchased-product.data-purchased' ? 'text-gray-100' : 'text-gray-400']"
                         >
-                            Dropdown Menu
+                            Pembelian
                         </span>
                     </div>
                 </div>
@@ -278,7 +279,7 @@
                 </div>
             </div>
             <ul
-                class="ml-12 transition-dropdown overflow-hidden"
+                class="ml-10 transition-dropdown overflow-hidden"
                 :class="[
                     isSidebarExpanded && isDropdownOpen
                         ? 'opacity-100 max-h-96 visible'
@@ -287,17 +288,20 @@
             >
                 <li>
                     <router-link
-                        to=""
-                        class="hover:bg-slate-700/90 group transition-colors duration-150 p-2 w-full block"
+                        :to="{ name: 'purchased-product.data-purchased' }"
+                        class="block"
                     >
+                    <div class="w-full p-2 hover:bg-blue-500 group transition-colors duration-150 rounded-md" :class="[$route.name === 'purchased-product.data-purchased' ? 'bg-blue-500' : '']">
                         <span
-                            class="text-sm whitespace-nowrap text-gray-300 group-hover:text-gray-100"
-                            >Testing</span
+                            class="text-sm whitespace-nowrap group-hover:text-gray-100"
+                            :class="[$route.name === 'purchased-product.data-purchased' ? 'text-white' : 'text-gray-300']"
+                            >Data Pembelian</span
                         >
+                    </div>
                     </router-link>
                 </li>
             </ul>
-        </div> -->
+        </div>
     </div>
 </template>
 

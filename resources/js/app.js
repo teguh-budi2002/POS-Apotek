@@ -26,13 +26,23 @@ pinia.use(piniaPluginPersistedstate);
 const app = createApp(App);
 
 app.use(PrimeVue, {
+    locale: {
+      firstDayOfWeek: 1,
+      dayNames: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+      dayNamesShort: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+      dayNamesMin: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+      monthNames: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+      monthNamesShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+      today: 'Hari Ini',
+      clear: 'Hapus',
+    },
     theme: {
-        preset: Aura,
-        options: {
-            prefix: "p",
-            darkModeSelector: "dark-mode",
-            cssLayer: false,
-        },
+      preset: Aura,
+      options: {
+          prefix: "p",
+          darkModeSelector: "dark-mode",
+          cssLayer: false,
+      },
     },
 });
 app.component("Select", Select);
