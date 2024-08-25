@@ -24,18 +24,18 @@ class PurchaseProduct extends Model
         'selling_price',
         'profit_margin',
         'discount',
-        'payment_method',
         'status_order',
-        'status_payment',
         'order_date',
-        'paid_on',
-        'cash_paid',
         'tax',
+        'termin_payment',
+        'format_termin_date',
+        'termin_date',
         'shipping_cost',
         'shipping_details',
         'order_note',
-        'proof_of_payment',
+        'purchase_invoice',
         'action_by',
+        'updated_by'
     ];
 
     protected function casts()
@@ -45,6 +45,10 @@ class PurchaseProduct extends Model
             'status_payment' => StatusPayment::class,
             'payment_method' => PaymentMethod::class
         ];
+    }
+
+    public function payment() {
+        return $this->hasOne(Payment::class);
     }
 
     public function apotek() {
@@ -76,10 +80,10 @@ class PurchaseProduct extends Model
     }
 
     public function setOrderDateAttribute($value) {
-        return $this->attributes['order_date'] = Carbon::parse($value)->toDateTimeString();
+        return $this->attributes['order_date'] = Carbon::parse($value)->setTimezone('Asia/Jakarta')->toDateTimeString();
     }
 
-    public function setPaidOnAttribute($value) {
-        return $this->attributes['paid_n'] = Carbon::parse($value)->toDateTimeString();
+    public function getTerminDateAttribute($value) {
+        return Carbon::parse($value)->isoFormat('dddd, D MMMM Y');
     }
 }

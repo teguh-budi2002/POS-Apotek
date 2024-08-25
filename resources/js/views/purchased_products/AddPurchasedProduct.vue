@@ -110,24 +110,26 @@
             </div>
             <div class="mt-2">
               <div class="flex items-center space-x-2 mb-2">
-                <label for="proof_of_payment" class="font-semibold text-slate-500">Bukti Pembayaran</label>
-                <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Unggah Bukti Pembayaran'" style="font-size: 1.2rem"></i>
+                <label for="purchase_invoice" class="font-semibold text-slate-500">Faktur Pembelian</label>
+                <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Unggah Bukti Pembelian'" style="font-size: 1.2rem"></i>
               </div>
-              <div v-if="errors.proof_of_payment">
-                <p class="text-xs text-rose-500 mb-1">{{ errors.proof_of_payment }}</p>
+              <div v-if="errors.purchase_invoice">
+                <p class="text-xs text-rose-500 mb-1">{{ errors.purchase_invoice }}</p>
               </div>
               <div class="flex justify-start">
                 <FileUpload 
                   class="!bg-slate-900 hover:!bg-slate-700"
-                  v-model="proof_of_payment"
+                  v-model="purchase_invoice"
                   chooseLabel="Unggah"
                   cancelLabel="Hapus"
                   chooseIcon="pi pi-upload"
                   :maxFileSize="2048000"
-                  invalidFileSizeMessage="Maksimal ukuran file: 2MB" 
+                  accept="image/png,image/webp"
+                  invalidFileSizeMessage="Maksimal ukuran file: 2MB"
+                  invalidFileTypeMessage="Ekstensi file yang diizinkan (png, webp)." 
                   :multiple="false"
                   :fileLimit="1"
-                  @select="handleSelectOnFileUpload" 
+                  @select="(value) => handleSelectOnFileUpload('purchase_invoice', value)" 
                 />
               </div>
             </div>
@@ -475,18 +477,6 @@
                   />
                 </InputGroup>
               </div>
-              <div class="status_payment mt-2">
-                <label for="status_payment" class="font-semibold text-slate-500 block mb-2">Status Pembayaran</label>
-                <Select
-                  v-model="status_payment"
-                  v-bind="statusPaymentAttr"
-                  :options="[{name: 'Sudah Dibayar', value: 'Paid'}, {name: 'Terlambat', value: 'Late'}]"
-                  optionLabel="name"
-                  optionValue="value"
-                  placeholder="Pilih status pembayaran"
-                  class="w-full"
-                />
-              </div>
               <div class="paid_date mt-2">
                 <div>
                   <label for="paid_on" class="mb-2 block font-semibold text-slate-500">Dibayar Pada</label>
@@ -501,6 +491,43 @@
                     hourFormat="24"
                     v-model="paid_on" 
                     v-bind="paidOnAttr"
+                  />
+                </div>
+              </div>
+              <div class="mt-2">
+                <div class="flex items-center space-x-2 mb-2">
+                  <label for="proof_of_payment" class="font-semibold text-slate-500">Bukti Pembayaran</label>
+                  <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Unggah Bukti Pembayaran'" style="font-size: 1.2rem"></i>
+                </div>
+                <div v-if="errors.proof_of_payment">
+                  <p class="text-xs text-rose-500 mb-1">{{ errors.proof_of_payment }}</p>
+                </div>
+                <div class="flex justify-start">
+                  <FileUpload 
+                    class="!bg-slate-900 hover:!bg-slate-700"
+                    v-model="proof_of_payment"
+                    chooseLabel="Unggah"
+                    cancelLabel="Hapus"
+                    chooseIcon="pi pi-upload"
+                    :maxFileSize="2048000"
+                    accept="image/png,image/webp"
+                    invalidFileSizeMessage="Maksimal ukuran file: 2MB"
+                    invalidFileTypeMessage="Ekstensi file yang diizinkan (png, webp)." 
+                    :multiple="false"
+                    :fileLimit="1"
+                    @select="(value) => handleSelectOnFileUpload('proof_of_payment', value)" 
+                  />
+                </div>
+              </div>
+              <div class="paid_notes mt-2">
+                <div>
+                  <label for="paid_notes" class="mb-2 block font-semibold text-slate-500">Catatan Pembayaran</label>
+                  <Textarea 
+                    rows="5"
+                    placeholder="Catatan pembayaran"
+                    v-model="paid_notes"
+                    v-bind="paidNotesAttr"
+                    class="w-full"
                   />
                 </div>
               </div>
@@ -604,7 +631,6 @@ export default {
     const selling_price = ref([])
     const batch_number = ref([])
     const expired_date_product = ref([])
-    const MAX_FILE_SIZE = 2048000;
     const initialPrice = ref([])
     const totalQtyItems = ref(0)
     const totalPriceItems = ref(0)
@@ -664,11 +690,6 @@ export default {
         purchasedProductStore.filters.search = ''
     };
 
-    const isValidExtension = (file) => {
-      const validExtensions = ['application/msword', 'image/png', 'image/jpg'];
-      return validExtensions.includes(file.type);
-    }
-
     const { handleSubmit, defineField, errors } = useForm({
       validationSchema: {
         supplier_id: yup.string().required("Pemasok harus dipilih."),
@@ -677,17 +698,16 @@ export default {
         order_date: yup.date().required("Tanggal pembelian wajib ditentukan."),
         status_order: yup.string().required("Status order wajib dipilih."),
         paid_on: yup.date().nullable(),
+        paid_notes: yup.string().nullable(),
         payment_method: yup.string().required("Metode pembayaran wajib dipilih."),
         termin_payment: yup.number().nullable(),
         format_terim_date: yup.string().nullable(),
         cash_paid: yup.number().nullable(),
-        status_payment: yup.string().nullable(),
         shipping_cost: yup.number().nullable(),
         shipping_details: yup.string().nullable(),
         order_note: yup.string().nullable(),
-        proof_of_payment: yup.mixed().required("Bukti pembayaran wajib diunggah.")
-                              .test('max-file-size', 'Ukuran file terlalu besar.', (value) => value.size <= MAX_FILE_SIZE)
-                              .test('file-type', 'Ekstensi file tidak valid.', (value) => isValidExtension(value)),
+        proof_of_payment: yup.mixed().nullable(),
+        purchase_invoice: yup.mixed().required("Bukti pembelian wajib diunggah."),
       },
       initialValues: {
         shipping_cost: 0
@@ -698,17 +718,18 @@ export default {
     const [termin_payment, terminPaymentAttr] = defineField('termin_payment');
     const [format_termin_date, formatTerminDateAttr] = defineField('format_termin_date');
     const [cash_paid, cashPaidAttr] = defineField('cash_paid');
-    const [status_payment, statusPaymentAttr] = defineField('status_payment')
     const [reference_number, referenceNumberAttr] = defineField('reference_number');
     const [order_date, orderDateAttr] = defineField('order_date');
     const [status_order, statusOrderAttr] = defineField('status_order');
     const [paid_on, paidOnAttr] = defineField('paid_on');
+    const [paid_notes, paidNotesAttr] = defineField('paid_notes');
     const [apotek_id, apotekIdAttr] = defineField('apotek_id');
     const [supplier_id, supplierIdAttr] = defineField('supplier_id');
     const [shipping_cost, shipingCostAttr] = defineField('shipping_cost');
     const [shipping_details, shippingDetailsAttr] = defineField('shipping_details');
     const [order_note, orderNoteAttr] = defineField('order_note');
     const [proof_of_payment, proofOfPaymentAttr] = defineField('proof_of_payment');
+    const [purchase_invoice, purchaseInvoiceAttr] = defineField('purchase_invoice');
 
     const handleDisplayAddressSupplier = (event) => {
       const { value:supplierId } = event
@@ -720,16 +741,14 @@ export default {
       })      
     }
 
-    const handleSelectOnFileUpload = (event) => {      
-      if (event.files && event.files.length > 0) {
-        if (event.files.length > 1) {
-          return;
-        }
-          proof_of_payment.value = event.files[0];
-      } else {
-          proof_of_payment.value = null;
+    const handleSelectOnFileUpload = (field, event) => {      
+      const file = event.files.length > 0 ? event.files[0] : null;
+      if (field === 'purchase_invoice') {
+        purchase_invoice.value = file;
+      } else if (field === 'proof_of_payment') {
+        proof_of_payment.value = file;
       }
-    }
+    };
 
     const handleBatchNumberProduct = (field, productId, event) => {      
       const { value: batchNumber } = event
@@ -753,8 +772,8 @@ export default {
         format_termin_date.value = null
       } else {
         cash_paid.value = null
-        status_payment.value = null
         paid_on.value = null
+        paid_notes.value = null
       }
     }
 
@@ -807,16 +826,17 @@ export default {
         paid_on: datas.paid_on,
         payment_method: datas.payment_method,
         termin_payment: datas.termin_payment,
+        format_termin_date: datas.format_termin_date,
         cash_paid: datas.cash_paid,
-        status_payment: datas.status_payment,
         shipping_cost: datas.shipping_cost,
         shipping_details: datas.shipping_details,
         order_note: datas.order_note,
         proof_of_payment: datas.proof_of_payment,
         product_id: productIds,
-        grand_total: totalPriceItems.value
+        grand_total: totalPriceItems.value,
+        purchase_invoice: datas.purchase_invoice,
       }
-
+      
       const productData = dataOrder.product_id.reduce((acc, productId) => {
         acc[productId] = {
           qty: qty.value[productId] || 0,
@@ -837,6 +857,8 @@ export default {
         ...dataOrder,
         productData,
       }
+
+            console.log(finalDataOrder);
 
       await purchasedProductStore.AddPurchasedProduct(finalDataOrder)
 
@@ -862,6 +884,7 @@ export default {
         });
       } else {
         loading.value = false
+        purchasedProductStore.setNullListProductSelected()
         router.push({name: 'purchased-product.data-purchased', params: { addedPurchasedProducts: true }})
       }            
     })
@@ -1016,6 +1039,8 @@ export default {
       apotek_id,
       supplier_id,
       proof_of_payment,
+      purchase_invoice,
+      purchaseInvoiceAttr,
       proofOfPaymentAttr,
       paymentMethodAttr,
       terminPaymentAttr,
@@ -1041,10 +1066,10 @@ export default {
       orderNoteAttr,
       paid_on,
       paidOnAttr,
+      paid_notes,
+      paidNotesAttr,
       status_order,
       statusOrderAttr,
-      status_payment,
-      statusPaymentAttr,
       calculateEachProductData,
       calculateCostShippingIntoTotalPrice,
       totalPriceItems,

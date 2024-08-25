@@ -71,7 +71,7 @@ class Product extends Model
             return $query->where(function($query) use($search) {
                 $query->where('product_code', 'like', '%' . $search . '%')
                         ->orWhere('name', 'like', '%' . $search . '%');  
-            });
+            })->orderBy("name", "asc");
         });
     }
 }

@@ -3,7 +3,7 @@
         <template v-slot:content>
             <Toast />
             <div>
-                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" />
+                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" class="!bg-transparent" />
             </div>
             <div
                 class="main-content-product bg-white rounded-md shadow-md w-full card p-4"

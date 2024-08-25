@@ -95,6 +95,8 @@ Route::prefix('stock')->middleware('auth:sanctum')->group(function() {
 Route::prefix('ordered-product')->middleware('auth:sanctum')->group(function() {
   // Ordered Purchased Product into Supplier
   Route::post('purchase-product', [PurchaseApiController::class, 'purchasedProduct']);
+  Route::post('paid-order/{purchase_product_order_id}', [PurchaseApiController::class, 'paidOrder']);
+  Route::post('change-status-order/{purchase_product_order_id}', [PurchaseApiController::class, 'changeStatusOrder']);
   Route::get('get-all-purchased-product', [PurchaseApiController::class, 'getAllPurchasedProduct']);
   Route::get('get-paginate-purchased-product', [PurchaseApiController::class, 'getPaginatePurchasedProduct']);
 

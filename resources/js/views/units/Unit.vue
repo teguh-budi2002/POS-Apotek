@@ -2,8 +2,8 @@
     <Content>
         <template v-slot:content>
             <Toast />
-						<div>
-                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" />
+            <div>
+                <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" class="!bg-transparent" />
             </div>
             <div
                 class="main-content-unit bg-white rounded-md shadow-md w-full card p-4"

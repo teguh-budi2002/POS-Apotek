@@ -12,25 +12,31 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     detailPurchasedProduct: {},
     errorGetData: false,
     errorAddedData: false,
+    errorSavedPayment: false,
+    errorChangeStatusOrder: false,
     productDoesntHaveDefaultStockError: false,
     errorMessage: '',
     filters: {
       search: "",
-    }
+    },
+    URL: 'ordered-product/get-paginate-purchased-product',
+    NEXT_PAGE_URL: '',
+    PREV_PAGE_URL: '',
   }),
   actions: {
-    async getListOrderPurchasedProduct(rows = 10) {
+    async getListOrderPurchasedProduct(url = this.URL) { 
       this.errorGetData = false;
       try {
-        const response = await apiServices.get("ordered-product/get-paginate-purchased-product", {
-          rows,
+        const response = await apiServices.get(url, {
           params: {
             ...this.filters
           }
         });        
-
+        
         if (response.data.status_code === 200) {
           this.listOrderPurchasedProduct = response.data.datas.purchasedProducts.data;
+          this.NEXT_PAGE_URL = response.data.datas.purchasedProducts?.next_page_url;
+          this.PREV_PAGE_URL = response.data.datas.purchasedProducts?.prev_page_url;
         }
       } catch (error) {
         this.errorGetData = true;        
@@ -110,8 +116,6 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
             "Content-Type" : "multipart/form-data"
           }
         })
-        console.log(response.data.datas);
-        
         
       } catch (error) {
         this.errorAddedData = true
@@ -122,6 +126,48 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
             this.errorMessage = error.response.data.datas.message;
           }
         }        
+      }
+    },
+    async paidOrder(datas) {
+      try {
+        this.errorSavedPayment = false
+        const response = await apiServices.post(`ordered-product/paid-order/${this.detailPurchasedProduct.id}`, datas, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        })
+
+        if (response.data.status_code === 200) {
+          const updatedDataOrder = await response.data.datas.updatedDataOrder
+          const findIndex = this.listOrderPurchasedProduct.findIndex((item) => item.id === updatedDataOrder.id);
+          
+          if (findIndex !== -1) {
+            this.listOrderPurchasedProduct.splice(findIndex, 1, updatedDataOrder);
+          }
+          this.detailPurchasedProduct = updatedDataOrder;
+        }
+      } catch (error) {        
+        this.errorSavedPayment = true
+      }
+    },
+    async changeStatusOrder(status_order, order_id) {
+      this.errorChangeStatusOrder = false
+      try {
+        const response = await apiServices.post(`ordered-product/change-status-order/${order_id}`, { 
+          status_order: status_order
+         });
+
+        if (response.data.status_code === 200) {
+          const updatedDataOrder = await response.data.datas.updatedDataOrder
+          const findIndex = this.listOrderPurchasedProduct.findIndex((item) => item.id === updatedDataOrder.id);
+          
+          if (findIndex !== -1) {
+            this.listOrderPurchasedProduct.splice(findIndex, 1, updatedDataOrder);
+          }
+        }
+      } catch (error) {
+        this.errorChangeStatusOrder = true
+        console.log(error)
       }
     },
     setFilter(key, value) {
@@ -137,6 +183,10 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         this.productIds.splice(indexOfProduct, 1);
         this.listProductSelected.splice(indexOfProduct, 1);
       }
+    },
+    setNullListProductSelected() {
+      this.productIds = [];
+      this.listProductSelected = [];
     },
     setProductIds(id) {
       this.productIds.push(id);
