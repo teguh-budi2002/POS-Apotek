@@ -367,6 +367,7 @@
                       size="small"
                       label="Prev"
                       severity="contrast"
+                      class="disabled:!cursor-not-allowed"
                       @click="getPrevPageContent"
                       :disabled="!prevPageUrl"
                   />
@@ -375,6 +376,7 @@
                       size="small"
                       label="Next"
                       severity="contrast"
+                      class="disabled:!cursor-not-allowed"
                       @click="getNextPageContent"
                       :disabled="!nextPageUrl"
                   />

@@ -228,7 +228,7 @@ class PurchaseApiController extends Controller
     }
 
     public function getPaginatePurchasedProduct(Request $request){
-        $perPage = 1;
+        $perPage = 10;
         $purchasedProducts = PurchaseProduct::with($this->getRelation)->cursorPaginate($perPage);
 
         return $purchasedProducts->isNotEmpty()

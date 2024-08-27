@@ -469,6 +469,9 @@
                   <label for="cash" class="font-semibold text-slate-500">Uang Tunai</label>
                   <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Nominal uang tunai yang dibayar'" style="font-size: 1.2rem"></i>
                 </div>
+                <div v-if="errors.cash_paid">
+                  <p class="text-xs text-rose-500 mb-2">{{ errors.cash_paid }}</p>
+                </div>
                 <InputGroup>
                   <InputGroupAddon>
                     <i class="pi pi-money-bill"></i>
@@ -706,7 +709,7 @@ export default {
         payment_method: yup.string().required("Metode pembayaran wajib dipilih."),
         termin_payment: yup.number().nullable(),
         format_terim_date: yup.string().nullable(),
-        cash_paid: yup.number().nullable(),
+        cash_paid: yup.number().nullable().test('less-nominal', 'Nominal uang tunai tidak boleh kurang dari jumlah total pembelian.',  value => value == null || value >= totalPriceItems.value),
         shipping_cost: yup.number().nullable(),
         shipping_details: yup.string().nullable(),
         order_note: yup.string().nullable(),
