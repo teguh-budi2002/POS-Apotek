@@ -51,6 +51,11 @@ const routes = [
                         path: 'tambah-data-pembelian',
                         name: 'purchased-product.add-data-purchased',
                         component: () => import("../views/purchased_products/AddPurchasedProduct.vue")
+                    },
+                    {
+                        path: 'edit-data-pembelian/:reference_number',
+                        name: 'purchased-product.edit-data-purchased',
+                        component: () => import("../views/purchased_products/EditPurchasedProduct.vue")
                     }
                 ]
             },

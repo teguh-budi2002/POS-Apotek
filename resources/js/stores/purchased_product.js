@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import apiServices from "../services/api";
+import EditPurchasedProduct from "../views/purchased_products/EditPurchasedProduct.vue";
 
 export const usePurchasedProductStore = defineStore("usePurchasedProductStore", {
   state: () => ({
@@ -12,6 +13,7 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     detailPurchasedProduct: {},
     errorGetData: false,
     errorAddedData: false,
+    errorEditData: false,
     errorSavedPayment: false,
     errorChangeStatusOrder: false,
     productDoesntHaveDefaultStockError: false,
@@ -128,6 +130,19 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         }        
       }
     },
+    async editPurchasedProduct(datas, purchaseProductId) {
+      console.log(datas, 'datas');
+      
+      this.errorEditData = false
+      this.productDoesntHaveDefaultStockError = false
+      this.errorMessage = ''
+      try {
+        const response = await apiServices.patch(`ordered-product/edit-purchased-product/${purchaseProductId}`, datas)
+
+      } catch (error) {
+        this.errorEditData = true     
+      }
+    },
     async paidOrder(datas) {
       try {
         this.errorSavedPayment = false
@@ -175,6 +190,31 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     },
     setSelectedListProducts(products) {
       this.listProductSelected.push(products);
+    },
+    setInitialListProductSelected(products) {  
+      this.listProductSelected = [];
+      this.productIds = [];
+
+      const dataOldProducts = products.map((item) => ({
+        id: item.id,
+        name: item.name,
+        product_code: item.product_code,
+        unit_price: item.unit_price,
+        unit: {
+          id: item.unit_product_id,
+          name: item.unit_product_name,
+        },
+        qty: item.product_detail.qty,
+        tax: item.product_detail.tax,
+        discount: item.product_detail.discount,
+        price_after_discount: item.product_detail.price_after_discount,
+        batch_number: item.product_detail.batch_number ?? 0,
+        profit_margin: item.product_detail.profit_margin,
+        unit_selling_price: item.product_detail.selling_price,
+        total_price: item.product_detail.sub_total,
+        expired_date_product: item.product_detail.expired_date_product,
+      }));
+      this.listProductSelected.push(...dataOldProducts);
     },
     removeSelectedListProducts(product) {
       const indexOfProduct = this.listProductSelected.findIndex((item) => item.id === product.id);

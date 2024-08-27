@@ -67,13 +67,12 @@ class PurchaseApiController extends Controller
         DB::beginTransaction();
         try {
             $validation = $request->validated();
-            $terminDate = self::formatTerminDate($request->termin_payment, $request->format_termin_date, $request->order_date);
+            $terminDate = self::formattedTerminDate($request->termin_payment, $request->format_termin_date, $request->order_date);
             $paymentPath = "/public/purchase-product/proof-of-payment";
             $invoicePath = "/public/purchase-product/invoice";
             $proofOfPayment = $request->file('proof_of_payment') ? $this->storeImage($request->file('proof_of_payment'), $paymentPath) : null;
             $purchaseInvoice = $request->file('purchase_invoice') ? $this->storeImage($request->file('purchase_invoice'), $invoicePath) : null;
-            $paymentDetails = self::calculateStatusPayment($request->cash_paid, $request->grand_total);
-
+            $paymentDetails = self::calculatePaymentStatus($request->cash_paid, $request->grand_total);
             $existingStockByOrderedProduct = StockProduct::whereIn('product_id', $request->product_id)
                                                           ->pluck('product_id')
                                                           ->toArray();
@@ -83,20 +82,19 @@ class PurchaseApiController extends Controller
             if (!empty($missingProduct)) {
                 $productMissingName = Product::select("id", "name")->whereIn('id', $missingProduct)->pluck('name')->toArray();
                 $productMissingNameStr = implode(", ", $productMissingName);
-
+                
                 return $this->responseJson([
                     'isProductDoesntHaveDefaultStock' => true,
                     'message' => "Harap sesuaikan stock awal pada {$productMissingNameStr}. untuk menghindari kesalahan dalam inventaris."
                 ], 400, "Produk Tidak Memiliki Stock Awal (Default Stock)");
             }
-
+                        
             $createOrder = PurchaseProduct::create([
                 'apotek_id' => $request->apotek_id,
                 'supplier_id' => $request->supplier_id,
                 'reference_number' => $request->reference_number,
                 'grand_total' => $request->grand_total,
                 'status_order' => $request->status_order,
-                'paid_on' => $request->paid_on,
                 'order_date' => $request->order_date,
                 'shipping_cost' => $request->shipping_cost,
                 'shipping_details' => $request->shipping_details,
@@ -144,6 +142,72 @@ class PurchaseApiController extends Controller
 
             DB::commit();
             return $this->responseJson(201, "Pembelian produk kepada supplier berhasil");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->responseJson(500, $th->getMessage());
+        }
+    }
+
+    public function editPurchasedProduct(PurchaseProductRequest $request, $purchaseProductId) {
+         DB::beginTransaction();
+        try {
+            $validation = $request->validated();
+            $purchasedProducts = PurchaseProduct::findOrFail($purchaseProductId);
+            $newGrandTotal = $request->grand_total;
+            $existingStockByOrderedProduct = StockProduct::whereIn('product_id', $request->product_id)
+                                                          ->pluck('product_id')
+                                                          ->toArray();
+                                                          
+            if ($purchasedProducts->grand_total !== $newGrandTotal) {
+                $payment = Payment::select("id", "nominal_cost_more_or_less")->findOrFail($purchaseProductId);
+                $payment->nominal_cost_more_or_less = $newGrandTotal;
+                $payment->save();
+                
+                // Count stock if [$oldQty !== $newQty]
+                $currentStock = StockProduct::select("id", "stock", "product_id")->whereIn('product_id', $existingStockByOrderedProduct)->get();
+                foreach ($currentStock as $stock) {
+                    $oldQty = $request->productData[$stock->product_id]['oldQty'];
+                    $newQty = $request->productData[$stock->product_id]['newQty'];
+                    if ($oldQty !== $newQty) {
+                        $stock->stock = $stock->stock - $oldQty + $newQty;
+                        $stock->save();
+                    } else {
+                        break;
+                    }
+                }
+            }
+           
+            $purchasedProducts->update([
+                'apotek_id' => $request->apotek_id,
+                'supplier_id' => $request->supplier_id,
+                'reference_number' => $request->reference_number,
+                'grand_total' => $newGrandTotal,
+                'status_order' => $request->status_order,
+                'order_date' => $request->order_date,
+                'shipping_cost' => $request->shipping_cost,
+                'shipping_details' => $request->shipping_details,
+                'order_note' => $request->order_note,
+                'action_by' => Auth::user()->name,
+            ]);
+
+            $combineRequestProductPurchased = [];
+            foreach ($request->product_id as $productId) {
+                $combineRequestProductPurchased[$productId] = [
+                    'qty' => $request->productData[$productId]['newQty'],
+                    'discount' => $request->productData[$productId]['discount'],
+                    'tax' => $request->productData[$productId]['tax'],
+                    'selling_price' => $request->productData[$productId]['selling_price'],
+                    'sub_total' => $request->productData[$productId]['total_price'],
+                    'price_after_discount' => $request->productData[$productId]['price_after_discount'],
+                    'profit_margin' => $request->productData[$productId]['profit_margin'],
+                    'expired_date_product' => Carbon::parse($request->productData[$productId]['expired_date_product'])->format("Y-m-d")
+                ];
+            }
+
+            $purchasedProducts->purchasedProducts()->sync($combineRequestProductPurchased);
+
+            DB::commit();
+            return $this->responseJson(201, "Order produk berhasil diubah");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());
@@ -259,7 +323,7 @@ class PurchaseApiController extends Controller
         }
     }
 
-    private static function calculateStatusPayment($cashPaid, $grandTotal) {
+    private static function calculatePaymentStatus($cashPaid, $grandTotal) {
         $statusPayment = '';
         $isCostMoreOrLess = '';
         $nominalCostMoreOrLess = 0;
@@ -281,7 +345,7 @@ class PurchaseApiController extends Controller
         ];
     }
 
-    private static function formatTerminDate($terminPayment, $formatDate, $orderDate) {
+    private static function formattedTerminDate($terminPayment, $formatDate, $orderDate) {
         $orderDate = Carbon::parse($orderDate);
         $termin = (int) $terminPayment;
 

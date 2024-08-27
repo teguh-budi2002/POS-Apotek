@@ -21,7 +21,7 @@ class PurchaseProductRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'apotek_id' => 'required',
             'supplier_id' => 'required',
             'reference_number' => 'unique:purchase_products,reference_number',
@@ -46,6 +46,14 @@ class PurchaseProductRequest extends BaseFormRequest
             'proof_of_payment' => 'nullable|file|max:2048|mimes:png,webp',
             'purchase_invoice' => 'required|file|max:2048|mimes:png,webp'
         ];
+
+        if (in_array($this->method(), ['PUT', 'PATCH'])) {
+            $rules['reference_number'] = 'nullable|unique:purchase_products,reference_number,' . $this->purchase_product_order_id;
+            $rules['purchase_invoice'] = 'nullable|file|max:2048|mimes:png,webp';
+            $rules['payment_method'] = 'nullable';
+        }
+
+        return $rules;
     }
 
     public function messages()

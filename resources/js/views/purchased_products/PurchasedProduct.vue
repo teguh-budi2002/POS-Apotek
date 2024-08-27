@@ -225,10 +225,18 @@
                         </Column>
                         <Column
                             field="action_by"
-                            header="Ditambah oleh"
+                            header="Ditambahkan oleh"
                         >
                             <template #body="slotProps">
                                 {{ slotProps.data.action_by }}
+                            </template>
+                        </Column>
+                        <Column
+                            field="updated_by"
+                            header="Diubah oleh"
+                        >
+                            <template #body="slotProps">
+                                {{ slotProps.data.updated_by ?? "Belum Ada Perubahan" }}
                             </template>
                         </Column>
                         <template #expansion="slotProps">
@@ -654,6 +662,7 @@ import { useToast } from "primevue/usetoast";
 import { usePurchasedProductStore } from '../../stores/purchased_product';
 import { useForm } from "vee-validate";
 import * as yup from "yup";
+import { useRouter } from "vue-router";
 
 export default {
     components: {
@@ -720,6 +729,7 @@ export default {
       ])
       const popoverStatusOrderData = ref(null)
       const selectedStatusOrder = ref(null)
+      const router = useRouter()
 
       onMounted(async () => {
         await loadPurchasedProducts()
@@ -836,6 +846,11 @@ export default {
             label: "Detail",
             icon: "pi pi-fw pi-eye",
             command: () => displayDetailPurchaseProduct.value = true,
+        },
+        {
+            label: "Edit",
+            icon: "pi pi-pencil",
+            command: () => router.push({ name: "purchased-product.edit-data-purchased", params: { reference_number: purchasedProductStore.detailPurchasedProduct.reference_number } }),
         },
       ]);
 

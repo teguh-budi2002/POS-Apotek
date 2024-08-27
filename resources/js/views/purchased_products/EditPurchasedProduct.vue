@@ -108,84 +108,13 @@
                 v-bind="orderDateAttr" 
               />
             </div>
-            <div class="mt-2">
-              <div class="flex items-center space-x-2 mb-2">
-                <label for="purchase_invoice" class="font-semibold text-slate-500">Faktur Pembelian</label>
-                <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Unggah Bukti Pembelian'" style="font-size: 1.2rem"></i>
-              </div>
-              <div v-if="errors.purchase_invoice">
-                <p class="text-xs text-rose-500 mb-1">{{ errors.purchase_invoice }}</p>
-              </div>
-              <div class="flex justify-start">
-                <FileUpload 
-                  class="!bg-slate-900 hover:!bg-slate-700"
-                  v-model="purchase_invoice"
-                  chooseLabel="Unggah"
-                  cancelLabel="Hapus"
-                  chooseIcon="pi pi-upload"
-                  :maxFileSize="2048000"
-                  accept="image/png,image/webp"
-                  invalidFileSizeMessage="Maksimal ukuran file: 2MB"
-                  invalidFileTypeMessage="Ekstensi file yang diizinkan (png, webp)." 
-                  :multiple="false"
-                  :fileLimit="1"
-                  @select="(value) => handleSelectOnFileUpload('purchase_invoice', value)" 
-                />
-              </div>
-            </div>
           </div>
         </div>
       </div>
       <div class="bg-white rounded-md shadow-md border-l-8 border-[#022f45] w-full card p-4 mt-5">
-        <div class="search_product">
-          <div class="flex justify-center items-center space-x-2">
-            <Button
-                    type="button"
-                    icon="pi pi-filter-slash"
-                    label="Clear"
-                    outlined
-                    @click="clearFilter()"
-                />
-            <div class="w-2/4 relative">
-              <div class="bg-white z-50 absolute top-12 shadow-lg p-2 rounded-b-lg w-[94%] h-full min-h-40 overflow-y-auto custom-scrollbar" v-show="searchQuery">
-                <div class="mt-10" v-if="loading">
-                   <ProgressBar mode="indeterminate" style="height: 6px;" class="w-10/12 mx-auto"></ProgressBar>
-                </div>
-                <div v-else>
-                  <div v-if="products.length > 0">
-                    <div 
-                      class="flex items-centers space-x-2 cursor-pointer hover:bg-slate-100 p-2 rounded font-semibold text-slate-500"
-                      v-for="product in products"
-                      :key="product.id"
-                      @click="selectProduct(product)"
-                    >
-                      <p>{{ product.product_code }}</p>
-                      <p>-</p>
-                      <p>{{ product.name }}</p>
-                    </div>
-                  </div>
-                  <div v-else class="mt-7">
-                    <p class="text-center">Produk <b>{{ searchQuery }}</b> tidak ditemukan.</p>
-                  </div>
-                </div>
-              </div>
-              <InputGroup>
-                <InputText 
-                  class="w-full"
-                  placeholder="Cari produk"
-                  v-model="searchQuery"
-                />
-                <Button 
-                  icon="pi pi-search"
-                  class="!bg-slate-900 !text-white !border-none"
-                />
-              </InputGroup>
-            </div>
-          </div>
-          <div v-if="errorListProductNotSelected" class="flex justify-center mt-3">
-            <div class="p-1 px-2 bg-rose-400 w-fit rounded-md">
-              <p class="text- text-center text-white uppercase font-semibold">Wajib Memilih Minimal 1 Produk</p>
-            </div>
+        <div class="alert_payment_is_paid flex justify-center" v-if="isOrderPaid()">
+          <div class="w-2/4 bg-green-500 rounded-md p-2 shadow-md">
+            <p class="text-white uppercase text-center font-semibold">Pembayaran Lunas</p>
           </div>
         </div>
         <div class="selected_product mt-5">
@@ -193,9 +122,6 @@
             <table class="w-full table-auto">
               <thead class="bg-slate-200">
                 <tr>
-                  <th class="p-2">
-                    <i class="pi pi-trash text-rose-500"></i>
-                  </th>
                   <th class="p-2">
                     <p class="text-slate-700 font-semibold text-sm whitespace-nowrap">Nama Produk</p>
                   </th>
@@ -233,14 +159,6 @@
               </thead>
               <tbody v-if="listProductSelected.length > 0" class="bg-gray-50">
                 <tr v-for="product in listProductSelected" :key="product.id">
-                  <td class="p-2">
-                    <Button 
-                      icon="pi pi-times"
-                      class="!text-rose-500 hover:!bg-rose-100"
-                      text
-                      @click="removeSelectedProduct(product)"
-                    />
-                  </td>
                   <td class="p-2 space-y-3 text-center">
                     <p class="text-slate-900 font-semibold text-center text-sm whitespace-nowrap">{{ product.name }}</p>
                     <Button 
@@ -254,7 +172,8 @@
                       v-model="qty[product.id]" 
                       @input="(value) => calculateEachProductData('qty', product.id, value)" 
                       :inputId="`qty_of_${product.id}`" 
-                      class="qty-input" 
+                      class="qty-input"
+                      :disabled="isOrderPaid()" 
                     />
                   </td>
                   <td class="p-2">
@@ -272,7 +191,8 @@
                       @input="(value) => calculateEachProductData('tax', product.id, value)"  
                       class="w-full" 
                       :inputId="`tax_of_${product.id}`" 
-                      placeholder="(Opsional)" 
+                      placeholder="(Opsional)"
+                      :disabled="isOrderPaid()" 
                     />                 
                   </td>
                   <td class="p-2">
@@ -281,7 +201,8 @@
                       @input="(value) => calculateEachProductData('discount', product.id, value)"   
                       class="w-full" 
                       :inputId="`disc_of${product.id}`" 
-                      placeholder="(Opsional)"  
+                      placeholder="(Opsional)"
+                      :disabled="isOrderPaid()"  
                     />
                   </td>
                   <td class="p-2">
@@ -405,152 +326,39 @@
                 mode="currency" 
                 currency="IDR"
                 locale="id-ID"
-                :minFractionDigits="0" 
+                :minFractionDigits="0"
                 class="w-full"
                 fluid
+                :disabled="isOrderPaid()"
               />
             </InputGroup>
-            <div class="flex justify-end items-end h-20">
+            <div class="flex justify-end items-end space-y-2 h-20">
               <div>
                 <p class="font-semibold text-slate-600">Jumlah Total Pembelian</p>
+                <p class="font-semibold text-slate-600">Status Pembayaran</p>
               </div>
               <div>
                 <p>: {{ formatCurrencyIDR(totalPriceItems) }}</p>
+                <p :class="[isOrderPaid() ? 'text-green-500' : 'text-rose-500']">: {{ isOrderPaid() ? 'LUNAS' : 'BELUM LUNAS' }}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
       <div class="bg-white rounded-md shadow-md border-l-8 border-[#022f45] w-full card p-4 mt-5">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label for="payment_method" class="mb-2 block font-semibold text-slate-500">Metode Pembayaran</label>
-            <div v-if="errors.payment_method">
-                <p class="text-xs text-rose-500 mb-1">{{ errors.payment_method }}</p>
-            </div>
-            <Select 
-              :options="paymentMethodOptions"
-              optionLabel="name"
-              optionValue="name"
+        <div>
+          <div class="order_note">
+            <label for="order_note" class="block mb-2 text-slate-500 font-semibold">
+              Catatan Pembelian
+              <span class="text-rose-500 font-normal text-sm">(Opsional)</span>
+            </label>
+            <Textarea 
+              rows="8"
+              placeholder="Berikan rincian catatan pembelian"
+              v-model="order_note"
+              v-bind="orderNoteAttr"
               class="w-full"
-              placeholder="Metode pembayaran saat pembelian barang"
-              v-model="payment_method"
-              v-bind="paymentMethodAttr"
-              @change="handlePaymentMethodChange"
             />
-            <div class="termin_payment mt-2" v-show="payment_method === 'Credit'">
-              <div class="flex items-center space-x-2 mb-2">
-                <label for="termin_payment" class="font-semibold text-slate-500">Termin Pembayaran</label>
-                <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Tentukan waktu kredit'" style="font-size: 1.2rem"></i>
-              </div>
-              <InputGroup>
-                <InputNumber
-                  v-model="termin_payment"
-                  v-bind="terminPaymentAttr"
-                  placeholder="Termin Pembayaran"
-                  class="termin-input"
-                />
-                <Select 
-                  :options="[
-                    { name: 'Hari', value: 'Day' },
-                    { name: 'Bulan', value: 'Month' }
-                  ]"
-                  v-model="format_termin_date"
-                  v-bind="formatTerminDateAttr"
-                  optionLabel="name"
-                  optionValue="value"
-                  placeholder="Pilih jenis waktu"
-                />
-              </InputGroup>
-            </div>
-            <div v-show="payment_method === 'Cash'">
-              <div class="cash mt-2">
-                <div class="flex items-center space-x-2 mb-2">
-                  <label for="cash" class="font-semibold text-slate-500">Uang Tunai</label>
-                  <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Nominal uang tunai yang dibayar'" style="font-size: 1.2rem"></i>
-                </div>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <i class="pi pi-money-bill"></i>
-                  </InputGroupAddon>
-                  <InputNumber
-                    v-model="cash_paid"
-                    v-bind="cashPaidAttr"
-                    prefix="Rp "
-                    placeholder="Nominal Uang Tunai Yang Dibayar"
-                  />
-                </InputGroup>
-              </div>
-              <div class="paid_date mt-2">
-                <div>
-                  <label for="paid_on" class="mb-2 block font-semibold text-slate-500">Dibayar Pada</label>
-                  <DatePicker 
-                    class="w-full"
-                    placeholder="Tentukan tanggal kapan order dibayar"
-                    showIcon 
-                    showButtonBar
-                    fluid
-                    dateFormat="dd/mm/yy"
-                    showTime 
-                    hourFormat="24"
-                    v-model="paid_on" 
-                    v-bind="paidOnAttr"
-                  />
-                </div>
-              </div>
-              <div class="mt-2">
-                <div class="flex items-center space-x-2 mb-2">
-                  <label for="proof_of_payment" class="font-semibold text-slate-500">Bukti Pembayaran</label>
-                  <i class="pi pi-question-circle bg-blue-300 text-white rounded-full cursor-pointer" v-tooltip.top="'Unggah Bukti Pembayaran'" style="font-size: 1.2rem"></i>
-                </div>
-                <div v-if="errors.proof_of_payment">
-                  <p class="text-xs text-rose-500 mb-1">{{ errors.proof_of_payment }}</p>
-                </div>
-                <div class="flex justify-start">
-                  <FileUpload 
-                    class="!bg-slate-900 hover:!bg-slate-700"
-                    v-model="proof_of_payment"
-                    chooseLabel="Unggah"
-                    cancelLabel="Hapus"
-                    chooseIcon="pi pi-upload"
-                    :maxFileSize="2048000"
-                    accept="image/png,image/webp"
-                    invalidFileSizeMessage="Maksimal ukuran file: 2MB"
-                    invalidFileTypeMessage="Ekstensi file yang diizinkan (png, webp)." 
-                    :multiple="false"
-                    :fileLimit="1"
-                    @select="(value) => handleSelectOnFileUpload('proof_of_payment', value)" 
-                  />
-                </div>
-              </div>
-              <div class="paid_notes mt-2">
-                <div>
-                  <label for="paid_notes" class="mb-2 block font-semibold text-slate-500">Catatan Pembayaran</label>
-                  <Textarea 
-                    rows="5"
-                    placeholder="Catatan pembayaran"
-                    v-model="paid_notes"
-                    v-bind="paidNotesAttr"
-                    class="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="order_note">
-              <label for="order_note" class="block mb-2 text-slate-500 font-semibold">
-                Catatan Pembelian
-                <span class="text-rose-500 font-normal text-sm">(Opsional)</span>
-              </label>
-              <Textarea 
-                rows="8"
-                placeholder="Berikan rincian catatan pembelian"
-                v-model="order_note"
-                v-bind="orderNoteAttr"
-                class="w-full"
-              />
-            </div>
           </div>
         </div>
         <div class="flex justify-end">
@@ -558,7 +366,7 @@
             type="button"
             label="Simpan"
             class="!bg-blue-900 hover:!bg-blue-800 !text-white !border-none mt-5"
-            @click="submitPurchasedProduct"
+            @click="submitEditPurchasedProduct"
             :loading="loading"
             />
           </div>
@@ -579,13 +387,13 @@ import InputGroupAddon from "primevue/inputgroupaddon";
 import ProgressBar from 'primevue/progressbar';
 import Textarea from "primevue/textarea";
 import { useToast } from "primevue/usetoast";
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { debounce } from '../../helpers/debounce';
 import { usePurchasedProductStore } from "../../stores/purchased_product";
 import { formatCurrencyIDR } from '../../helpers/formatCurrency';
 import { useForm } from "vee-validate";
 import * as yup from "yup";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 export default {
   components: {
@@ -601,13 +409,15 @@ export default {
     Textarea
   },
   setup() {
+    const route = useRoute()
     const breadcrumbIcon = ref({
       icon: 'pi pi-chart-bar'
     })
     const breadcrumbItems = ref([
         { label: 'Dashboard' }, 
         { label: 'Data Pembelian' }, 
-        { label: 'Tambah Data Pembelian' }, 
+        { label: 'Edit Data Pembelian' }, 
+        { label: route.params.reference_number }, 
     ]);
     const paymentMethodOptions = ref([
       { name: "Bank Transfer" },
@@ -617,14 +427,14 @@ export default {
     const router = useRouter()
     const toast = useToast()
     const purchasedProductStore = usePurchasedProductStore()
+    const detailPurchasedProduct = computed(() => purchasedProductStore.detailPurchasedProduct)
     const products = ref([])
     const apoteks = ref([])
     const suppliers = ref([])
     const listProductSelected = ref([])
     const loading = ref(false)
-    const searchQuery = ref(purchasedProductStore.filters.search || '')
     const selectedSupplier = ref("")
-    const addressSupplier = ref("")
+    const addressSupplier = ref(detailPurchasedProduct.value.supplier.address || '')
     const qty = ref([])
     const price_before_discount = ref([])
     const tax = ref([])
@@ -640,14 +450,13 @@ export default {
     const totalPriceItems = ref(0)
     const errorListProductNotSelected = ref(true)
 
+    const isOrderPaid = () => {
+      return detailPurchasedProduct.value.payment.status_payment === 'Paid'
+    }
+
     onMounted(async () => {
-      searchQuery.value = purchasedProductStore.filters.search || ''
-
-      if (searchQuery.value) {
-        await loadProductsByNameAndProductCode()
-      }
-
       listProductSelected.value = purchasedProductStore.listProductSelected
+
       if (listProductSelected.value.length > 0) {
         errorListProductNotSelected.value = false
       }
@@ -657,15 +466,16 @@ export default {
         loadSuppliers()
       ])
 
+      loadProductSelected()
       initialValueEachProduct()
       countTotalItemAndPriceValues()
+      calculateCostShippingIntoTotalPrice()
     })
 
-    const loadProductsByNameAndProductCode = async () => {
-      await purchasedProductStore.getListProductsBySpecificColumn();
-      products.value = purchasedProductStore.listProducts;
-      loading.value = false;
-    };
+    const loadProductSelected = () => {
+      purchasedProductStore.setInitialListProductSelected(detailPurchasedProduct.value.purchased_products)
+      purchasedProductStore.setProductIds(...detailPurchasedProduct.value.purchased_products.map(product => product.id))
+    }
 
     const loadApoteks = async () => {
       await purchasedProductStore.getListApoteks();
@@ -677,23 +487,6 @@ export default {
       suppliers.value = purchasedProductStore.listSuppliers;
     }
 
-    const debouncedSearch = debounce((value) => {
-      purchasedProductStore.setFilter('search', value)
-      loadProductsByNameAndProductCode()
-    }, 500)
-
-    watch(searchQuery, (newQuery, oldQuery) => {
-      if (newQuery !== oldQuery) {
-          loading.value = true;
-          debouncedSearch(newQuery)
-        }
-    })
-
-    const clearFilter = () => {
-        searchQuery.value = ''
-        purchasedProductStore.filters.search = ''
-    };
-
     const { handleSubmit, defineField, errors } = useForm({
       validationSchema: {
         supplier_id: yup.string().required("Pemasok harus dipilih."),
@@ -701,39 +494,30 @@ export default {
         reference_number: yup.string().nullable(),
         order_date: yup.date().required("Tanggal pembelian wajib ditentukan."),
         status_order: yup.string().required("Status order wajib dipilih."),
-        paid_on: yup.date().nullable(),
-        paid_notes: yup.string().nullable(),
-        payment_method: yup.string().required("Metode pembayaran wajib dipilih."),
-        termin_payment: yup.number().nullable(),
-        format_terim_date: yup.string().nullable(),
-        cash_paid: yup.number().nullable(),
         shipping_cost: yup.number().nullable(),
         shipping_details: yup.string().nullable(),
         order_note: yup.string().nullable(),
-        proof_of_payment: yup.mixed().nullable(),
-        purchase_invoice: yup.mixed().required("Bukti pembelian wajib diunggah."),
       },
       initialValues: {
-        shipping_cost: 0
+        supplier_id: detailPurchasedProduct.value.supplier_id,
+        reference_number: detailPurchasedProduct.value.reference_number,
+        apotek_id: detailPurchasedProduct.value.apotek_id,
+        status_order: detailPurchasedProduct.value.status_order,
+        order_date: detailPurchasedProduct.value.order_date,
+        shipping_details: detailPurchasedProduct.value.shipping_details,
+        shipping_cost: detailPurchasedProduct.value.shipping_cost,
+        order_note: detailPurchasedProduct.value.order_note
       }
     })
 
-    const [payment_method, paymentMethodAttr] = defineField('payment_method');
-    const [termin_payment, terminPaymentAttr] = defineField('termin_payment');
-    const [format_termin_date, formatTerminDateAttr] = defineField('format_termin_date');
-    const [cash_paid, cashPaidAttr] = defineField('cash_paid');
     const [reference_number, referenceNumberAttr] = defineField('reference_number');
     const [order_date, orderDateAttr] = defineField('order_date');
     const [status_order, statusOrderAttr] = defineField('status_order');
-    const [paid_on, paidOnAttr] = defineField('paid_on');
-    const [paid_notes, paidNotesAttr] = defineField('paid_notes');
     const [apotek_id, apotekIdAttr] = defineField('apotek_id');
     const [supplier_id, supplierIdAttr] = defineField('supplier_id');
     const [shipping_cost, shipingCostAttr] = defineField('shipping_cost');
     const [shipping_details, shippingDetailsAttr] = defineField('shipping_details');
     const [order_note, orderNoteAttr] = defineField('order_note');
-    const [proof_of_payment, proofOfPaymentAttr] = defineField('proof_of_payment');
-    const [purchase_invoice, purchaseInvoiceAttr] = defineField('purchase_invoice');
 
     const handleDisplayAddressSupplier = (event) => {
       const { value:supplierId } = event
@@ -744,15 +528,6 @@ export default {
         }
       })      
     }
-
-    const handleSelectOnFileUpload = (field, event) => {      
-      const file = event.files.length > 0 ? event.files[0] : null;
-      if (field === 'purchase_invoice') {
-        purchase_invoice.value = file;
-      } else if (field === 'proof_of_payment') {
-        proof_of_payment.value = file;
-      }
-    };
 
     const handleBatchNumberProduct = (field, productId, event) => {      
       const { value: batchNumber } = event
@@ -787,21 +562,10 @@ export default {
      * @param {Object} datas - The data for the purchased product.
      * @returns {Promise<void>} - A promise that resolves when the purchased product is added successfully.
      */
-    const submitPurchasedProduct = handleSubmit(async (datas) => { 
+    const submitEditPurchasedProduct = handleSubmit(async (datas) => { 
       loading.value = true
-      const productIds = purchasedProductStore.productIds
-
-      if (listProductSelected.value.length === 0) {        
-        errorListProductNotSelected.value = true
-        toast.add({
-          severity: 'error',
-          summary: 'Error Submit Purchased Product',
-          detail: 'Wajib memilih minimal 1 produk.',
-          life: 3000
-        });
-        loading.value = false
-        return;
-      }
+      const productIds = detailPurchasedProduct.value.purchased_products.map(product => product.id);
+      const purchaseProductId = detailPurchasedProduct.value.id;
 
       const expiredDateIsNull = listProductSelected.value.some(product => {
         if (expired_date_product.value[product.id] === null) {
@@ -812,7 +576,7 @@ export default {
 
       if (expiredDateIsNull) {
         toast.add({
-          severity: 'warn',
+          severity: 'error',
           summary: 'Error Submit Purchased Product',
           detail: `Cantumkan tanggal kadaluarsa pada setiap produk.`,
           life: 3000
@@ -827,23 +591,17 @@ export default {
         reference_number: datas.reference_number,
         order_date: datas.order_date,
         status_order: datas.status_order,
-        paid_on: datas.paid_on,
-        payment_method: datas.payment_method,
-        termin_payment: datas.termin_payment,
-        format_termin_date: datas.format_termin_date,
-        cash_paid: datas.cash_paid,
         shipping_cost: datas.shipping_cost,
         shipping_details: datas.shipping_details,
         order_note: datas.order_note,
-        proof_of_payment: datas.proof_of_payment,
         product_id: productIds,
         grand_total: totalPriceItems.value,
-        purchase_invoice: datas.purchase_invoice,
       }
       
       const productData = dataOrder.product_id.reduce((acc, productId) => {
         acc[productId] = {
-          qty: qty.value[productId] || 0,
+          oldQty: detailPurchasedProduct.value.purchased_products.find(product => product.id === productId).product_detail.qty,
+          newQty: qty.value[productId] || 0,
           price_before_discount: price_before_discount.value[productId] || 0,
           tax: tax.value[productId] || 0,
           discount: discount.value[productId] || 0,
@@ -861,22 +619,10 @@ export default {
         ...dataOrder,
         productData,
       }
+      
+      await purchasedProductStore.editPurchasedProduct(finalDataOrder, purchaseProductId)
 
-      await purchasedProductStore.AddPurchasedProduct(finalDataOrder)
-
-      if (purchasedProductStore.productDoesntHaveDefaultStockError) {
-        loading.value = false
-        toast.add({
-          severity: 'error',
-          summary: 'Error Submit Purchased Product',
-          detail: purchasedProductStore.errorMessage,
-          life: 6000
-        });
-
-        return;
-      }
-
-      if (purchasedProductStore.errorAddedData) {
+      if (purchasedProductStore.errorEditData) {
         loading.value = false
         toast.add({
           severity: 'error',
@@ -892,56 +638,25 @@ export default {
     })
 
     /**
-     * Selects a product and performs necessary actions.
-     *
-     * @param {Object} product - The selected product.
+     * Initializes the initial values for each product in the purchased product list.
+     * If there are selected products, it sets the initial values based on the product properties.
+     * If there are no selected products, it does nothing.
      */
-    const selectProduct = (product) => {
-      purchasedProductStore.setSelectedListProducts(product)
-      purchasedProductStore.setProductIds(product.id)
-      initialValueEachProduct()
-      countTotalItemAndPriceValues()
-
-      errorListProductNotSelected.value = false
-      searchQuery.value = ''
-      purchasedProductStore.filters.search = ''
-    }
-
-    /**
-     * Removes a selected product from the purchased product list.
-     * 
-     * @param {Object} product - The product to be removed.
-     */
-    const removeSelectedProduct = (product) => {
-      purchasedProductStore.removeSelectedListProducts(product)
-      if (listProductSelected.value.length === 0) {        
-        errorListProductNotSelected.value = true
-        
-      }  
-      countTotalItemAndPriceValues()
-    }
-
-    /**
-     * Initializes the initial values for each selected product.
-     * If there are selected products, it sets the default values for each product.
-     * @function initialValueEachProduct
-     * @returns {void}
-     */
-    const initialValueEachProduct = () => {
-    if (purchasedProductStore.listProductSelected.length > 0) {
+    const initialValueEachProduct = () => {      
+      if (purchasedProductStore.listProductSelected.length > 0) {
           purchasedProductStore.listProductSelected.forEach(product => {
           const productId = product.id;
 
-          qty.value[productId] = qty.value[productId] ?? 1;
+          qty.value[productId] = qty.value[productId] ?? product.qty;
           price_before_discount.value[productId] = price_before_discount.value[productId] ?? product.unit_price;
-          tax.value[productId] = tax.value[productId] ?? 0;
-          discount.value[productId] = discount.value[productId] ?? 0;
-          price_after_discount.value[productId] = price_after_discount.value[productId] ?? product.unit_price;
-          total_price.value[productId] = total_price.value[productId] ?? product.unit_price;
+          tax.value[productId] = tax.value[productId] ?? product.tax;
+          discount.value[productId] = discount.value[productId] ?? product.discount;
+          price_after_discount.value[productId] = price_after_discount.value[productId] ?? product.price_after_discount;
+          total_price.value[productId] = total_price.value[productId] ?? product.total_price;
           profit_margin.value[productId] = profit_margin.value[productId] ?? product.profit_margin;
           selling_price.value[productId] = selling_price.value[productId] ?? product.unit_selling_price;
-          batch_number.value[productId] = batch_number.value[productId] ?? 0;
-          expired_date_product.value[productId] = expired_date_product.value[productId] ?? null;
+          batch_number.value[productId] = batch_number.value[productId] ?? product.batch_number;
+          expired_date_product.value[productId] = expired_date_product.value[productId] ?? product.expired_date_product;
           initialPrice.value[productId] = initialPrice.value[productId] ?? product.unit_price;
         });
       }
@@ -952,8 +667,8 @@ export default {
       totalQtyItems.value = listProductSelected.value.reduce((acc, curr) => {
         return acc + qty.value[curr.id]
       }, 0);
-
-      totalPriceItems.value = listProductSelected.value.reduce((acc, curr) => {
+      
+      totalPriceItems.value = listProductSelected.value.reduce((acc, curr) => {        
         return acc + total_price.value[curr.id]
       }, 0);
     }
@@ -998,14 +713,25 @@ export default {
       totalPriceItems.value = totalPriceItems.value + shipping_cost.value;
     }
 
+    /**
+     * Calculates the total price of purchased products by taking into account the shipping cost.
+     * 
+     * @param {Object} event - The event object containing the shipping cost value.
+     */
     let previousShippingCost = 0;
-    const calculateCostShippingIntoTotalPrice = (event) => {      
-      const newShippingCostValue = parseFloat(event.value.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '.'));
-
-      if (!isNaN(newShippingCostValue)) { 
-          totalPriceItems.value = totalPriceItems.value - previousShippingCost + newShippingCostValue;
-          previousShippingCost = newShippingCostValue;
-      }   
+    const calculateCostShippingIntoTotalPrice = (event) => {
+      if (event?.value) {
+        const newShippingCostValue = parseFloat(event.value.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '.'));
+        
+        if (!isNaN(newShippingCostValue)) { 
+            totalPriceItems.value = totalPriceItems.value - previousShippingCost + newShippingCostValue;
+            previousShippingCost = newShippingCostValue;
+        }   
+      } else {
+        const initialShippingCost = shipping_cost.value;
+        totalPriceItems.value = totalPriceItems.value + initialShippingCost;
+        previousShippingCost = initialShippingCost;
+      }      
     }
     
     return {
@@ -1016,36 +742,19 @@ export default {
       suppliers,
       apoteks,
       loading,
-      searchQuery,
-      clearFilter,
-      selectProduct,
-      removeSelectedProduct,
       listProductSelected,
       formatCurrencyIDR,
       selectedSupplier,
       handleDisplayAddressSupplier,
-      handleSelectOnFileUpload,
       handlePaymentMethodChange,
       handleBatchNumberProduct,
       handleExpiredDateProduct,
       errors,
       addressSupplier,
-      payment_method,
-      termin_payment,
-      format_termin_date,
-      formatTerminDateAttr,
-      cash_paid,
-      cashPaidAttr,
       reference_number,
       order_date,
       apotek_id,
       supplier_id,
-      proof_of_payment,
-      purchase_invoice,
-      purchaseInvoiceAttr,
-      proofOfPaymentAttr,
-      paymentMethodAttr,
-      terminPaymentAttr,
       referenceNumberAttr,
       orderDateAttr,
       apotekIdAttr,
@@ -1066,18 +775,16 @@ export default {
       shippingDetailsAttr,
       order_note,
       orderNoteAttr,
-      paid_on,
-      paidOnAttr,
-      paid_notes,
-      paidNotesAttr,
       status_order,
       statusOrderAttr,
       calculateEachProductData,
       calculateCostShippingIntoTotalPrice,
       totalPriceItems,
       totalQtyItems,
-      submitPurchasedProduct,
+      submitEditPurchasedProduct,
       errorListProductNotSelected,
+      detailPurchasedProduct,
+      isOrderPaid
     }
   }
 }
