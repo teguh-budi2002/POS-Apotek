@@ -455,8 +455,6 @@ export default {
     }
 
     onMounted(async () => {
-      listProductSelected.value = purchasedProductStore.listProductSelected
-
       if (listProductSelected.value.length > 0) {
         errorListProductNotSelected.value = false
       }
@@ -475,6 +473,8 @@ export default {
     const loadProductSelected = () => {
       purchasedProductStore.setInitialListProductSelected(detailPurchasedProduct.value.purchased_products)
       purchasedProductStore.setProductIds(...detailPurchasedProduct.value.purchased_products.map(product => product.id))
+
+      listProductSelected.value = purchasedProductStore.listProductSelected
     }
 
     const loadApoteks = async () => {
