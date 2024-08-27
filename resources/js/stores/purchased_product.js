@@ -231,6 +231,9 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     setProductIds(id) {
       this.productIds.push(id);
     },
+    setNullProductIds() {
+      this.productIds = [];
+    },
     setSelectedPurchasedProduct(purchasedProduct) { 
       this.detailPurchasedProduct = purchasedProduct;
     }

@@ -732,6 +732,8 @@ export default {
       const router = useRouter()
 
       onMounted(async () => {
+        purchasedProductStore.setNullListProductSelected()
+        purchasedProductStore.setNullProductIds()
         await loadPurchasedProducts()
       })
 
