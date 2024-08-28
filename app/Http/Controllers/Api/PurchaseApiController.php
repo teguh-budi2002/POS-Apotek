@@ -187,7 +187,7 @@ class PurchaseApiController extends Controller
                 'shipping_cost' => $request->shipping_cost,
                 'shipping_details' => $request->shipping_details,
                 'order_note' => $request->order_note,
-                'action_by' => Auth::user()->name,
+                'updated_by' => Auth::user()->name,
             ]);
 
             $combineRequestProductPurchased = [];
