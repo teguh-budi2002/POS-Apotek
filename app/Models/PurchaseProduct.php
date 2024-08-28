@@ -66,6 +66,14 @@ class PurchaseProduct extends Model
     }
 
     public function setReferenceNumberAttribute($value) {
+        if (!empty($value)) {
+            if (str_starts_with($value, 'REF-')) {
+                return $this->attributes['reference_number'] = $value;
+            } else {
+                return $this->attributes['reference_number'] = "REF-{$value}";
+            }
+        }
+        
         if (empty($value)) {
             do {
                 $time = Carbon::now()->format('Y');
@@ -74,8 +82,6 @@ class PurchaseProduct extends Model
             } while (PurchaseProduct::where('reference_number', $reference_number)->exists());
     
             return $this->attributes['reference_number'] = $reference_number;
-        } else {
-            return $this->attributes['reference_number'] = "REF-{$value}";
         }
     }
 
