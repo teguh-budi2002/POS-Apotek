@@ -120,7 +120,6 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
       this.errorGetData = false;
       try {
         const response = await apiServices.get('user/get-name-of-users')
-        console.log(response.data);
         
         if (response.data.status_code === 200) {
           this.listUsers = response.data.datas;
