@@ -12,11 +12,16 @@ use App\Http\Controllers\Api\SalesApiController;
 use App\Http\Controllers\Api\StockApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\UnitProductApiController;
+use App\Http\Controllers\Api\UserApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('register/process',[RegisterApiController::class, 'registerProcess']);
 Route::post('login/process',[LoginApiController::class, 'loginProcess']);
 Route::post('logout',[LogoutController::class, 'logout']);
+
+Route::prefix('user')->middleware('auth:sanctum')->group(function() {
+  Route::get('get-name-of-users', [UserApiController::class, 'getNameOfUser']);
+});
 
 Route::prefix('apotek')->middleware('auth:sanctum')->group(function() {
   Route::get('/', [ApotekApiController::class, 'getAllApotek']);

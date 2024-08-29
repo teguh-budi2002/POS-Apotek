@@ -227,9 +227,21 @@ class PurchaseApiController extends Controller
             : $this->responseJson(404, "Tidak Ada Daftar Order Produk");
     }
 
+    /**
+     * Retrieves a paginated list of purchased products.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getPaginatePurchasedProduct(Request $request){
-        $perPage = 10;
-        $purchasedProducts = PurchaseProduct::with($this->getRelation)->cursorPaginate($perPage);
+        $perPage = 1;
+        $purchasedProducts = PurchaseProduct::with($this->getRelation);
+        
+        if ($request->has('filters')) {
+            $purchasedProducts->filterOrderedProducts($request->filters);
+        }
+       
+        $purchasedProducts = $purchasedProducts->cursorPaginate($perPage);
 
         return $purchasedProducts->isNotEmpty()
             ? $this->responseJson(['purchasedProducts' => $purchasedProducts], 200, "Berhasil mengambil daftar order produk")

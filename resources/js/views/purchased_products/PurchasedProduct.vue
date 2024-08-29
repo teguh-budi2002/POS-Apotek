@@ -5,6 +5,99 @@
 						<div>
                 <Breadcrumb :home="breadcrumbIcon" :model="breadcrumbItems" class="!bg-transparent" />
             </div>
+            <div class="filter-content bg-white rounded-md shadow-lg w-full card p-4 mb-4">
+              <div class="header-filter-content">
+                <div class="flex items-center space-x-1 !text-slate-600">
+                  <i class="pi pi-filter" style="font-size: 1.2rem;"></i>
+                  <p class="text-lg font-semibold">Filter</p>
+                </div>
+              </div>
+              <hr class="mt-2 mb-2">
+              <div class="grid grid-cols-4 gap-3 p-6">
+                <div>
+                  <label for="apotek" class="mb-2 block font-semibold text-slate-500">Lokasi Apotek</label>
+                  <Select 
+                    v-model="selectedFilterApotek"
+                    :options="apoteks"
+                    optionLabel="name_of_apotek"
+                    optionValue="id"
+                    placeholder="Filter Lokasi Apotek"
+                    class="w-full"
+                    @change="setFilterOption('apotek', selectedFilterApotek)"
+                  />
+                </div>
+                <div>
+                  <label for="supplier" class="mb-2 block font-semibold text-slate-500">Supplier</label>
+                  <Select 
+                    v-model="selectedFilterSupplier"
+                    :options="suppliers"
+                    optionLabel="supplier_name"
+                    optionValue="id"
+                    placeholder="Filter Lokasi Pemasok / Supplier"
+                    class="w-full"
+                    @change="setFilterOption('supplier', selectedFilterSupplier)"
+                  />
+                </div>
+                <div>
+                  <label for="status_order" class="mb-2 block font-semibold text-slate-500">Status Order</label>
+                  <Select 
+                    v-model="selectedFilterStatusOrder"
+                    :options="[
+                      { 'statusLabel': 'Proses', 'value': 'Pending' },
+                      { 'statusLabel': 'Dikirim', 'value': 'Shipping' },
+                      { 'statusLabel': 'Diterima', 'value': 'Delivered' },
+                      { 'statusLabel': 'Dibatalkan', 'value': 'Cancelled' }
+                    ]"
+                    optionLabel="statusLabel"
+                    optionValue="value"
+                    placeholder="Filter Status Order"
+                    class="w-full"
+                    @change="setFilterOption('status_order', selectedFilterStatusOrder)"
+                  />
+                </div>
+                <div>
+                  <label for="status_payment" class="mb-2 block font-semibold text-slate-500">Status Pembayaran</label>
+                  <Select 
+                    v-model="selectedFilterStatusPayment"
+                    :options="[
+                      { 'statusLabel': 'Belum Lunas', 'value': 'Due' },
+                      { 'statusLabel': 'Lunas', 'value': 'Paid' },
+                      { 'statusLabel': 'Terlambat', 'value': 'Late' }
+                    ]"
+                    optionLabel="statusLabel"
+                    optionValue="value"
+                    placeholder="Filter Status Pembayaran"
+                    class="w-full"
+                    @change="setFilterOption('status_payment', selectedFilterStatusPayment)"
+                  />
+                </div>
+                <div>
+                  <label for="user" class="mb-2 block font-semibold text-slate-500">Pengguna (Karyawan)</label>
+                  <Select 
+                    v-model="selectedFilterUser"
+                    :options="users"
+                    optionLabel="name"
+                    optionValue="name"
+                    placeholder="Filter Pengguna"
+                    class="w-full"
+                    @change="setFilterOption('user', selectedFilterUser)"
+                  />
+                </div>
+                <div>
+                  <label for="order_date" class="mb-2 block font-semibold text-slate-500">Tanggal Order</label>
+                  <DatePicker 
+                    v-model="selectedFilterOrderDate"
+                    selectionMode="range"
+                    :manualInput="false"
+                    showIcon
+                    dateFormat="dd/mm/yy"
+                    class="w-full"
+                    placeholder="Filter Tanggal Order"
+                    @date-select="setFilterOption('order_date', selectedFilterOrderDate)"
+                  />
+                </div>
+              </div>
+            </div>
             <div
                 class="main-content-purchased-product bg-white rounded-md shadow-lg w-full card p-4"
             >
@@ -685,6 +778,9 @@ export default {
     setup() {
       const purchasedProductStore = usePurchasedProductStore();
       const purchased_products = ref([]);
+      const apoteks = ref([]);
+      const suppliers = ref([]);
+      const users = ref([]);
       const nextPageUrl = ref('');
       const prevPageUrl = ref('');
       const loading = ref(false);
@@ -731,12 +827,24 @@ export default {
       ])
       const popoverStatusOrderData = ref(null)
       const selectedStatusOrder = ref(null)
+      const selectedFilterApotek = ref(null)
+      const selectedFilterSupplier = ref(null)
+      const selectedFilterStatusOrder = ref('')
+      const selectedFilterStatusPayment = ref('')
+      const selectedFilterUser = ref('')
+      const selectedFilterOrderDate = ref(null)
       const router = useRouter()
 
       onMounted(async () => {
-        purchasedProductStore.setNullListProductSelected()
-        purchasedProductStore.setNullProductIds()
-        await loadPurchasedProducts()
+        clearFilterState()
+        clearSelectedProduct()
+
+        Promise.all([
+          loadPurchasedProducts(),
+          loadApoteks(),
+          loadSuppliers(),
+          loadUsers()
+        ])
       })
 
       const loadPurchasedProducts = async (url) => {
@@ -750,6 +858,43 @@ export default {
         loading.value = false;
       };
 
+      const loadApoteks = async () => {
+        await purchasedProductStore.getListApoteks()
+        apoteks.value = purchasedProductStore.listApoteks
+      }
+
+      const loadSuppliers = async () => {
+        await purchasedProductStore.getListSuppliers()
+        suppliers.value = purchasedProductStore.listSuppliers
+      }
+
+      const loadUsers = async () => {
+        await purchasedProductStore.getListNameOfUser()
+        users.value = purchasedProductStore.listUsers
+      }
+
+      const setFilterOption = debounce((field, value) => {
+        if (field === 'order_date') {          
+          const startDate = {
+            'date':  value[0] ? new Date(value[0]).toLocaleDateString('en-CA') : '',
+          }
+
+          const endDate = {
+            'date':  value[1] ? new Date(value[1]).toLocaleDateString('en-CA') : '',
+          }
+          
+          purchasedProductStore.setFilter('start_date', startDate.date)
+          purchasedProductStore.setFilter('end_date', endDate.date)
+
+          if (startDate.date && endDate.date) {
+            loadPurchasedProducts()
+          }
+        } else {
+          purchasedProductStore.setFilter(field, value)
+          loadPurchasedProducts()
+        }                
+      }, 300)
+
       const getNextPageContent = async () => {
         const url = nextPageUrl.value;
         if (nextPageUrl) {
@@ -762,6 +907,15 @@ export default {
         if (prevPageUrl) {
           await loadPurchasedProducts(url);
         }
+      }
+
+      const clearSelectedProduct = () => {
+        purchasedProductStore.setNullListProductSelected()
+        purchasedProductStore.setNullProductIds()
+      }
+
+      const clearFilterState = () => {
+        purchasedProductStore.setNullFilters()
       }
 
       const countTotalItemsPerOrder = () => {
@@ -1034,6 +1188,9 @@ export default {
   
       return {
         purchased_products,
+        apoteks,
+        suppliers,
+        users,
         detailPurchasedProduct: computed(() => purchasedProductStore.detailPurchasedProduct),
         getNextPageContent,
         getPrevPageContent,
@@ -1083,7 +1240,14 @@ export default {
         STATUS_ORDER,
         selectedStatusOrder,
         popoverStatusOrderData,
-        handleChangeStatusOrder
+        handleChangeStatusOrder,
+        selectedFilterApotek,
+        selectedFilterSupplier,
+        selectedFilterStatusOrder,
+        selectedFilterStatusPayment,
+        selectedFilterUser,
+        selectedFilterOrderDate,
+        setFilterOption
       }
     }
 };

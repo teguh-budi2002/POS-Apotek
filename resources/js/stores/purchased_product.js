@@ -9,6 +9,7 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     listProductSelected: [],
     listApoteks: [],
     listSuppliers: [],
+    listUsers: [],
     productIds: [],
     detailPurchasedProduct: {},
     errorGetData: false,
@@ -20,6 +21,13 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     errorMessage: '',
     filters: {
       search: "",
+      apotek: "",
+      supplier: "",
+      status_order: "",
+      status_payment: "",
+      user: "",
+      start_date: "",
+      end_date: "",
     },
     URL: 'ordered-product/get-paginate-purchased-product',
     NEXT_PAGE_URL: '',
@@ -31,7 +39,7 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
       try {
         const response = await apiServices.get(url, {
           params: {
-            ...this.filters
+            filters: this.filters
           }
         });        
         
@@ -105,6 +113,22 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         this.errorGetData = true;
         if (error?.response?.data?.status_code === 404) {
           this.listApoteks = [];
+        }
+      }
+    },
+    async getListNameOfUser() {
+      this.errorGetData = false;
+      try {
+        const response = await apiServices.get('user/get-name-of-users')
+        console.log(response.data);
+        
+        if (response.data.status_code === 200) {
+          this.listUsers = response.data.datas;
+        }
+      } catch (error) {
+        this.errorGetData = true
+        if (error?.response?.data?.status_code === 404) {
+          this.listUsers = [];
         }
       }
     },
@@ -236,6 +260,18 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     },
     setSelectedPurchasedProduct(purchasedProduct) { 
       this.detailPurchasedProduct = purchasedProduct;
+    },
+    setNullFilters() {
+      this.filters = {
+        search: "",
+        apotek: "",
+        supplier: "",
+        status_order: "",
+        status_payment: "",
+        user: "",
+        start_date: "",
+        end_date: "",
+      }
     }
   },
   persist: true
