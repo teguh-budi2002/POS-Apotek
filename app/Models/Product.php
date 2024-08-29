@@ -57,12 +57,9 @@ class Product extends Model
     public function scopeFilterProduct($query, $filter) {
         $query->when($filter ?? false, function($query, $filter) {
             return $query->where(function($query) use($filter) {
-                            $query->where('product_code', 'like', '%' . $filter . '%')
-                                    ->orWhere('name', 'like', '%' . $filter . '%');  
-                        })
-                        ->orWhereRaw('MATCH(description) AGAINST (? IN NATURAL LANGUAGE MODE)', [$filter])
-                        ->orderByDesc("name");
-
+                $query->where('product_code', 'like', '%' . $filter . '%')
+                    ->orWhere('name', 'like', '%' . $filter . '%');  
+            })->orWhereRaw('MATCH(description) AGAINST (? IN NATURAL LANGUAGE MODE)', [$filter])->orderByDesc("name");
         });
     }
 
