@@ -59,6 +59,27 @@ const routes = [
                     }
                 ]
             },
+            {
+                path: "return-pembelian-produk",
+                name: "return-purchased-product",
+                children: [
+                    {
+                        path: 'data-return-pembelian',
+                        name: 'return-purchased-product.data-return-purchased',
+                        component: () => import("../views/return_purchased_products/ReturnPurchasedProduct.vue")
+                    },
+                    {
+                        path: 'tambah-data-return-pembelian',
+                        name: 'return-purchased-product.add-data-return-purchased',
+                        component: () => import("../views/return_purchased_products/AddReturnPurchasedProduct.vue")
+                    },
+                    {
+                        path: 'edit-data-return-pembelian/:return_reference_number',
+                        name: 'return-purchased-product.edit-data-return-purchased',
+                        component: () => import("../views/return_purchased_products/EditReturnPurchasedProduct.vue")
+                    },
+                ]
+            },
         ],
     },
     {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PurchaseProductRequest;
+use App\Models\OrderedPurchaseProduct;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\PurchaseProduct;
@@ -134,6 +135,7 @@ class PurchaseApiController extends Controller
                     'sub_total' => $request->productData[$productId]['total_price'],
                     'price_after_discount' => $request->productData[$productId]['price_after_discount'],
                     'profit_margin' => $request->productData[$productId]['profit_margin'],
+                    'batch_number' => $request->productData[$productId]['batch_number'],
                     'expired_date_product' => Carbon::parse($request->productData[$productId]['expired_date_product'])->format("Y-m-d")
                 ];
             }
@@ -200,6 +202,7 @@ class PurchaseApiController extends Controller
                     'sub_total' => $request->productData[$productId]['total_price'],
                     'price_after_discount' => $request->productData[$productId]['price_after_discount'],
                     'profit_margin' => $request->productData[$productId]['profit_margin'],
+                    'batch_number' => $request->productData[$productId]['batch_number'],
                     'expired_date_product' => Carbon::parse($request->productData[$productId]['expired_date_product'])->format("Y-m-d")
                 ];
             }
@@ -214,17 +217,27 @@ class PurchaseApiController extends Controller
         }
     }
 
-    /**
-     * Retrieve all purchased products.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getAllPurchasedProduct(){
-        $purchasedProducts = PurchaseProduct::withWhereHas('purchasedProducts')->get();
+    public function getRefNumbers() {
+        $referenceNumbers = PurchaseProduct::select('reference_number')->get();
+        return $referenceNumbers->isNotEmpty()
+            ? $this->responseJson($referenceNumbers, 200, "Berhasil mengambil daftar nomor referensi")
+            : $this->responseJson(404, "Tidak Ada Daftar Nomor Referensi");
+    }
 
-        $purchasedProducts->isNotEmpty()
-            ? $this->responseJson($purchasedProducts, 200, "Berhasil mengambil daftar order produk")
-            : $this->responseJson(404, "Tidak Ada Daftar Order Produk");
+    public function getListOrderedProductForReturn(Request $request){
+        $reference_number = $request->reference_number;
+
+        if (!empty($reference_number)) {
+            $detailProductWantToReturn = PurchaseProduct::with(['orderedProductDetailsForReturn' => function($query) {
+                $query->select('products.id AS product_id', 'product_code', 'name', 'img_product'); 
+            }])->select('id', 'grand_total', 'reference_number')->whereIn('reference_number', $reference_number)->get();
+
+            return $detailProductWantToReturn->isNotEmpty()
+                ? $this->responseJson($detailProductWantToReturn, 200, "Berhasil mengambil daftar order produk by (Filter Reference Number)")
+                : $this->responseJson(404, "Tidak Ada Daftar Order Produk by (Filter Reference Number)");
+        } else {
+            return $this->responseJson(400, "Error, Cant Found The Detail");
+        }
     }
 
     /**
@@ -234,7 +247,7 @@ class PurchaseApiController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function getPaginatePurchasedProduct(Request $request){
-        $perPage = 1;
+        $perPage = 10;
         $purchasedProducts = PurchaseProduct::with($this->getRelation);
         
         if ($request->has('filters')) {

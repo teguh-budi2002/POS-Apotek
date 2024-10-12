@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Requests\ReturnPurchaseProductRequest;
 use App\PaymentMethod;
 use App\StatusOrder;
 use App\StatusPayment;
@@ -63,7 +64,21 @@ class PurchaseProduct extends Model
     public function purchasedProducts() {
         return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id')
                     ->as('productDetail')
-                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'expired_date_product', 'sub_total');
+                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'batch_number', 'expired_date_product', 'sub_total');
+    }
+
+    public function purchasedProductsWithoutDetail() {
+        return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id');
+    }
+
+    public function orderedProductDetailsForReturn() {
+        return $this->belongsToMany(Product::class, 'ordered_purchase_products', 'purchase_product_id', 'product_id')
+                    ->as('productDetail')
+                    ->withPivot('qty', 'sub_total', 'batch_number', 'expired_date_product');
+    }
+
+    public function orderedProductReturned() {
+        return $this->belongsToMany(ReturnPurchasedProduct::class, 'purchase_return_details', 'purchase_product_ref_number', 'purchase_return_id', 'reference_number', 'id');
     }
 
     public function setReferenceNumberAttribute($value) {

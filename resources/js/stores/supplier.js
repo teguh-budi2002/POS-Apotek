@@ -3,16 +3,17 @@ import apiServices from "../services/api";
 
 export const useSupplierStore = defineStore("useSupplierStore", {
     state: () => ({
-        suppliers: [],
-        trashed_suppliers: [],
-        totalRecords: 0,
-        errorGetSuppliers: false,
-        errorAddedData: false,
-        errorUpdateData: false,
-        errorDeleteSupplier: false,
-        filters: {
-            search: ''
-        }
+      suppliers: [],
+      listSuppliers: [],
+      trashed_suppliers: [],
+      totalRecords: 0,
+      errorGetSuppliers: false,
+      errorAddedData: false,
+      errorUpdateData: false,
+      errorDeleteSupplier: false,
+      filters: {
+          search: ''
+      }
     }),
     actions: {
         async getSupplierPerPage(page = 1, rows = 10) {
@@ -55,6 +56,26 @@ export const useSupplierStore = defineStore("useSupplierStore", {
                     console.log(error.response.data, "404");
                 }
             }
+        },
+        async getListSupplierBySpecificColumn($column = ["supplier_name", "address"]) {
+        this.errorGetData = false;
+        try {
+            const response = await apiServices.get("supplier/get-supplier/by-specifiec-column", {
+              params: {
+                customColumn: $column
+              }
+            });
+          
+            if (response.data.status_code === 200) {
+            this.listSuppliers = response.data.datas;
+              
+            }
+          } catch (error) {
+            this.errorGetData = true;
+            if (error?.response?.data?.status_code === 404) {
+              this.listSuppliers = [];
+            }
+          }
         },
         async getTrashedSupplier() {
             try {

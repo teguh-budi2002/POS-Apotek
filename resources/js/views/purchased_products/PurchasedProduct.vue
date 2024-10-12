@@ -136,12 +136,13 @@
                                     <Button
                                         icon="pi pi-file-excel"
                                         label="Excel"
-                                        :loading="isExporting"
+                                        :loading="isExportingExcel"
                                         @click="exportExcel($event)"
                                     />
                                     <Button
                                         icon="pi pi-file-pdf"
                                         severity="danger"
+                                        :loading="isExportingPDF"
                                         label="PDF"
                                         @click="exportPDF($event)"
                                     />
@@ -381,6 +382,11 @@
                               <Column field="product_detail.sub_total" header="Sub Total">
                                 <template #body="slotProps">
                                   {{ formatCurrencyIDR(slotProps.data.product_detail.sub_total) }}
+                                </template>
+                              </Column>
+                              <Column field="product_detail.batch_number" header="Batch Number">
+                                <template #body="slotProps">
+                                  {{ slotProps.data.product_detail.batch_number }}
                                 </template>
                               </Column>
                               <Column field="product_detail.expired_date_product" header="Tanggal Kadaluarsa">
@@ -755,9 +761,12 @@ import { formatCurrencyIDR } from "../../helpers/formatCurrency";
 import { debounce } from "../../helpers/debounce";
 import { useToast } from "primevue/usetoast";
 import { usePurchasedProductStore } from '../../stores/purchased_product';
+import { useUserStore } from '../../stores/user';
 import { useForm } from "vee-validate";
 import * as yup from "yup";
 import { useRouter } from "vue-router";
+import { useApotekStore } from "../../stores/apotek";
+import { useSupplierStore } from "../../stores/supplier";
 
 export default {
     components: {
@@ -777,10 +786,14 @@ export default {
     },
     setup() {
       const purchasedProductStore = usePurchasedProductStore();
+      const userStore = useUserStore();
+      const apotekStore = useApotekStore();
+      const supplierStore = useSupplierStore();
       const purchased_products = ref([]);
       const apoteks = ref([]);
       const suppliers = ref([]);
       const users = ref([]);
+      const dataTable = ref([]);
       const nextPageUrl = ref('');
       const prevPageUrl = ref('');
       const loading = ref(false);
@@ -789,7 +802,8 @@ export default {
       const expandedRows = ref({});
       const rowsPerPageOptions = [10, 20, 50];
       const cm = ref(null);
-      const isExporting = ref(false);
+      const isExportingExcel = ref(false);
+      const isExportingPDF = ref(false);
       const selectedPurchasedProduct = ref(null);
       const breadcrumbIcon = ref({
           icon: 'pi pi-chart-bar'
@@ -825,6 +839,17 @@ export default {
           'value': 'Cancelled'
         },
       ])
+      const headers = ref([
+        "No. REF",
+        "Supplier / Pemasok",
+        "Lokasi Apotek",
+        "Total Item",
+        "Total Harga",
+        "Biaya Pengiriman",
+        "Tanggal Order",
+        "Status Order",
+        "Status Pembayaran",
+      ])
       const popoverStatusOrderData = ref(null)
       const selectedStatusOrder = ref(null)
       const selectedFilterApotek = ref(null)
@@ -859,18 +884,18 @@ export default {
       };
 
       const loadApoteks = async () => {
-        await purchasedProductStore.getListApoteks()
-        apoteks.value = purchasedProductStore.listApoteks
+        await apotekStore.getListApotekBySpecificColumn()
+        apoteks.value = apotekStore.listApoteks
       }
 
       const loadSuppliers = async () => {
-        await purchasedProductStore.getListSuppliers()
-        suppliers.value = purchasedProductStore.listSuppliers
+        await supplierStore.getListSupplierBySpecificColumn()
+        suppliers.value = supplierStore.listSuppliers
       }
 
       const loadUsers = async () => {
-        await purchasedProductStore.getListNameOfUser()
-        users.value = purchasedProductStore.listUsers
+        await userStore.getListNameOfUser()
+        users.value = userStore.listUsers
       }
 
       const setFilterOption = debounce((field, value) => {
@@ -937,20 +962,28 @@ export default {
         }, 500)
 
       watch(searchQuery, (newQuery, oldQuery) => {
-          if (newQuery !== oldQuery) {
+          if (newQuery !== oldQuery && newQuery.trim() !== '') {
               debouncedSearch(newQuery);
           }
       })
 
       const exportExcel = async () => {
-        isExporting.value = true
+        isExportingExcel.value = true
         const { utils, writeFileXLSX } = await import("xlsx");
 
         if (dataTable.value) {
             const date = new Date()
 
             const data = purchased_products.value.map((purch_product) => ({
-                "Nama Satuan": purch_product.name,
+              "No. REF": purch_product.reference_number,
+              "Supplier / Pemasok": purch_product.supplier.supplier_name,
+              "Lokasi Apotek": purch_product.apotek.name_of_apotek,
+              "Total Item": countTotalItemsPerOrder() + ' Item',
+              "Total Harga": formatCurrencyIDR(purch_product.grand_total),
+              "Biaya Pengiriman": purch_product.shipping_cost ? formatCurrencyIDR(purch_product.shipping_cost) : 'Rp 0',
+              "Tanggal Order": purch_product.order_date,
+              "Status Order": setLabelStatusOrder(purch_product.status_order),
+              "Status Pembayaran": setLabelStatusPayment(purch_product.payment.status_payment),
             }));
 
             const worksheetData = [
@@ -961,19 +994,29 @@ export default {
             ];
 
             const worksheet = utils.aoa_to_sheet(worksheetData)
+
+            const calculateColumnWidths = (data) => {
+                return data[0].map((_, colIndex) => {
+                    const colValues = data.map(row => row[colIndex] || '');
+                    const maxLength = Math.max(...colValues.map(val => val.toString().length));
+                    return { wch: maxLength + 2 };
+                });
+            };
+
+            worksheet['!cols'] = calculateColumnWidths(worksheetData);
             const workbook = utils.book_new();
             utils.book_append_sheet(workbook, worksheet, "Data");
 
             writeFileXLSX(workbook, `DataOrderProduk_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.xlsx`);
-            isExporting.value = false
+            isExportingExcel.value = false
         } else {
-            isExporting.value = false
+            isExportingExcel.value = false
             console.log(dataTable.value, "Datatable ref is null");
         }
       };
         
       const exportPDF = async () => {
-        isExporting.value = true
+        isExportingPDF.value = true
         const { default: jsPDF } = await import("jspdf")
         const { default: autoTable } = await import("jspdf-autotable")
         
@@ -981,20 +1024,31 @@ export default {
             const date = new Date()
             const doc = new jsPDF()
             const data = purchased_products.value.map((purch_product) => ({
-                "Nama Satuan": purch_product.name,
+              "No. REF": purch_product.reference_number,
+              "Supplier / Pemasok": purch_product.supplier.supplier_name,
+              "Lokasi Apotek": purch_product.apotek.name_of_apotek,
+              "Total Item": countTotalItemsPerOrder() + ' Item',
+              "Total Harga": formatCurrencyIDR(purch_product.grand_total),
+              "Biaya Pengiriman": purch_product.shipping_cost ? formatCurrencyIDR(purch_product.shipping_cost) : 'Rp 0',
+              "Tanggal Order": purch_product.order_date,
+              "Status Order": setLabelStatusOrder(purch_product.status_order),
+              "Status Pembayaran": setLabelStatusPayment(purch_product.payment.status_payment),
             }));
 
             const tableData = data.map(item => headers.value.map(header => item[header]))
 
             autoTable(doc, {
-                head: [headers.value],
-                body: tableData
-            })
+              head: [headers.value],
+              body: tableData,
+              styles: {
+                fontSize: 8,
+              }
+              })
 
             doc.save(`DataOrderProduk_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.pdf`)
-            isExporting.value = false
+            isExportingPDF.value = false
         } else {
-            isExporting.value = false
+            isExportingPDF.value = false
             console.log(dataTable.value, "Datatable ref is null");
         }
       };
@@ -1200,7 +1254,9 @@ export default {
         searchQuery,
         rows,
         rowsPerPageOptions,
-        isExporting,
+        isExportingExcel,
+        isExportingPDF,
+        dataTable,
         selectedPurchasedProduct,
         formatCurrencyIDR,
         breadcrumbIcon,

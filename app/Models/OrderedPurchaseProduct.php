@@ -19,6 +19,7 @@ class OrderedPurchaseProduct extends Model
         'profit_margin',
         'discount',
         'tax',
-        'expired_date_product'
+        'expired_date_product',
+        'batch_number'
     ];
 }

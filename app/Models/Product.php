@@ -38,8 +38,15 @@ class Product extends Model
 
     public function orderedProducts() {
         return $this->belongsToMany(PurchaseProduct::class, 'ordered_purchase_products', 'product_id', 'purchase_product_id')
-                    ->as('product_ordered')
-                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'expired_date_product')
+                    ->as('order_detail')
+                    ->withPivot('qty', 'price_after_discount', 'selling_price', 'profit_margin', 'discount', 'tax', 'expired_date_product', 'sub_total')
+                    ->withTimestamps();
+    }
+
+    public function orderedProductsForReturn() {
+        return $this->belongsToMany(PurchaseProduct::class, 'ordered_purchase_products', 'product_id', 'purchase_product_id')
+                    ->as('order_detail')
+                    ->withPivot('qty', 'sub_total', 'batch_number', 'expired_date_product')
                     ->withTimestamps();
     }
 

@@ -4,6 +4,7 @@ import apiServices from "../services/api";
 export const useApotekStore = defineStore("useApotekStore", {
     state: () => ({
         apoteks: [],
+        listApoteks: [],
         trashed_apoteks: [],
         totalRecords: 0,
         errorGetApoteks: false,
@@ -55,6 +56,25 @@ export const useApotekStore = defineStore("useApotekStore", {
                     console.log(error.response.data, "404");
                 }
             }
+        },
+        async getListApotekBySpecificColumn($column = ["name_of_apotek"]) {
+          this.errorGetData = false;
+          try {
+              const response = await apiServices.get("apotek/get-apotek/by-specifiec-column", {
+                params: {
+                    customColumn: $column
+                }
+              });
+              
+              if (response.data.status_code === 200) {
+                this.listApoteks = response.data.datas;
+              }
+          } catch (error) {
+              this.errorGetData = true;
+              if (error?.response?.data?.status_code === 404) {
+                this.listApoteks = [];
+              }
+          }
         },
         async getTrashedApotek() {
             try {

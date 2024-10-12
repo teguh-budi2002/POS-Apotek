@@ -49,13 +49,14 @@
                                     <Button
                                         icon="pi pi-file-excel"
                                         label="Excel"
-                                        :loading="isExporting"
+                                        :loading="isExportingExcel"
                                         @click="exportExcel($event)"
                                     />
                                     <Button
                                         icon="pi pi-file-pdf"
                                         severity="danger"
                                         label="PDF"
+                                        :loading="isExportingPDF"
                                         @click="exportPDF($event)"
                                     />
                                 </div>
@@ -455,7 +456,8 @@ export default {
         const cm = ref();
         const expandedRows = ref({});
         const loading = ref(false);
-        const isExporting = ref(false)
+        const isExportingExcel = ref(false)
+        const isExportingPDF = ref(false)
         const openDrawer = ref(false);
         const headers = ref([
             "Nama Supplier",
@@ -524,7 +526,7 @@ export default {
         })
 
         const exportExcel = async () => {
-            isExporting.value = true
+            isExportingExcel.value = true
             const { utils, writeFileXLSX } = await import("xlsx");
 
             if (dataTable.value) {
@@ -548,18 +550,27 @@ export default {
                 ];
 
                 const worksheet = utils.aoa_to_sheet(worksheetData)
+                const calculateColumnWidths = (data) => {
+                    return data[0].map((_, colIndex) => {
+                        const colValues = data.map(row => row[colIndex] || '');
+                        const maxLength = Math.max(...colValues.map(val => val.toString().length));
+                        return { wch: maxLength + 2 };
+                    });
+                };
+
+                worksheet['!cols'] = calculateColumnWidths(worksheetData);
                 const workbook = utils.book_new();
                 utils.book_append_sheet(workbook, worksheet, "Data");
 
                 writeFileXLSX(workbook, `DataSupplier_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.xlsx`);
-                isExporting.value = false
+                isExportingExcel.value = false
             } else {
-                isExporting.value = false
+                isExportingExcel.value = false
                 console.log(dataTable.value, "Datatable ref is null");
             }
         };
         const exportPDF = async () => {
-            isExporting.value = true
+            isExportingPDF.value = true
             const { default: jsPDF } = await import("jspdf")
             const { default: autoTable } = await import("jspdf-autotable")
             
@@ -580,13 +591,16 @@ export default {
 
                 autoTable(doc, {
                     head: [headers.value],
-                    body: tableData
+                    body: tableData,
+                    styles: {
+                        fontSize: 8,
+                    },
                 })
     
                 doc.save(`DataSupplier_${date.getDate()}_${date.getMonth() + 1}_${date.getFullYear()}.pdf`)
-                isExporting.value = false
+                isExportingPDF.value = false
             } else {
-                isExporting.value = false
+                isExportingPDF.value = false
                 console.log(dataTable.value, "Datatable ref is null");
             }
         };
@@ -748,7 +762,8 @@ export default {
             dataTable,
             formatCurrencyIDR,
             loading,
-            isExporting,
+            isExportingExcel,
+            isExportingPDF,
             onPage,
             searchQuery,
             openDrawer,

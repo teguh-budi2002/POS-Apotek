@@ -300,6 +300,20 @@
                     </div>
                     </router-link>
                 </li>
+                <li class="mt-2">
+                    <router-link
+                        :to="{ name: 'return-purchased-product.data-return-purchased' }"
+                        class="block"
+                    >
+                    <div class="w-full p-2 hover:bg-blue-500 group transition-colors duration-150 rounded-md" :class="[$route.name === 'return-purchased-product.data-return-purchased' ? 'bg-blue-500' : '']">
+                        <span
+                            class="text-sm whitespace-nowrap group-hover:text-gray-100"
+                            :class="[$route.name === 'return-purchased-product.data-return-purchased' ? 'text-white' : 'text-gray-300']"
+                            >Return Pembelian</span
+                        >
+                    </div>
+                    </router-link>
+                </li>
             </ul>
         </div>
     </div>

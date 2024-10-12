@@ -589,6 +589,8 @@ import { formatCurrencyIDR } from '../../helpers/formatCurrency';
 import { useForm } from "vee-validate";
 import * as yup from "yup";
 import { useRouter } from "vue-router";
+import { useApotekStore } from '../../stores/apotek';
+import { useSupplierStore } from '../../stores/supplier';
 
 export default {
   components: {
@@ -620,6 +622,8 @@ export default {
     const router = useRouter()
     const toast = useToast()
     const purchasedProductStore = usePurchasedProductStore()
+    const apotekStore = useApotekStore()
+    const supplierStore = useSupplierStore()
     const products = ref([])
     const apoteks = ref([])
     const suppliers = ref([])
@@ -671,13 +675,13 @@ export default {
     };
 
     const loadApoteks = async () => {
-      await purchasedProductStore.getListApoteks();
-      apoteks.value = purchasedProductStore.listApoteks;
+      await apotekStore.getListApotekBySpecificColumn();
+      apoteks.value = apotekStore.listApoteks;
     }
 
     const loadSuppliers = async () => {
-      await purchasedProductStore.getListSuppliers();
-      suppliers.value = purchasedProductStore.listSuppliers;
+      await supplierStore.getListSupplierBySpecificColumn();
+      suppliers.value = supplierStore.listSuppliers;
     }
 
     const debouncedSearch = debounce((value) => {
@@ -686,7 +690,7 @@ export default {
     }, 500)
 
     watch(searchQuery, (newQuery, oldQuery) => {
-      if (newQuery !== oldQuery) {
+      if (newQuery !== oldQuery && newQuery.trim() !== '') {
           loading.value = true;
           debouncedSearch(newQuery)
         }

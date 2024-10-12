@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CategoryProductApiController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\PurchaseApiController;
+use App\Http\Controllers\Api\ReturnPurchasedProductApiController;
 use App\Http\Controllers\Api\SalesApiController;
 use App\Http\Controllers\Api\StockApiController;
 use App\Http\Controllers\Api\SupplierApiController;
@@ -103,10 +104,18 @@ Route::prefix('ordered-product')->middleware('auth:sanctum')->group(function() {
   Route::patch('edit-purchased-product/{purchase_product_order_id}', [PurchaseApiController::class, 'editPurchasedProduct']);
   Route::post('paid-order/{purchase_product_order_id}', [PurchaseApiController::class, 'paidOrder']);
   Route::post('change-status-order/{purchase_product_order_id}', [PurchaseApiController::class, 'changeStatusOrder']);
-  Route::get('get-all-purchased-product', [PurchaseApiController::class, 'getAllPurchasedProduct']);
+
   Route::get('get-paginate-purchased-product', [PurchaseApiController::class, 'getPaginatePurchasedProduct']);
+  Route::get('get-all-ref-numbers', [PurchaseApiController::class, 'getRefNumbers']);
+  Route::post('list-product-for-return', [PurchaseApiController::class, 'getListOrderedProductForReturn']);
 
   // Ordered Sales Product Into Customer
   Route::post('sales-product', [SalesApiController::class, 'salesProduct']);
   Route::get('get-all-sales-product', [SalesApiController::class, 'getAllSalesProduct']);
+});
+
+Route::prefix('return-product')->middleware('auth:sanctum')->group(function() {
+  Route::get('get-paginate-return-product', [ReturnPurchasedProductApiController::class, 'getPaginateReturnPurchasedProduct']);
+  Route::post('add-return-product', [ReturnPurchasedProductApiController::class, 'addReturnPurchaseProduct']);
+  Route::patch('edit-return-product/{return_ref_num}', [ReturnPurchasedProductApiController::class, 'editReturnPurchaseProduct']);
 });

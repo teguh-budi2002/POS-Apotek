@@ -1,15 +1,11 @@
 import { defineStore } from "pinia";
 import apiServices from "../services/api";
-import EditPurchasedProduct from "../views/purchased_products/EditPurchasedProduct.vue";
 
 export const usePurchasedProductStore = defineStore("usePurchasedProductStore", {
   state: () => ({
     listOrderPurchasedProduct: [],
     listProducts: [],
     listProductSelected: [],
-    listApoteks: [],
-    listSuppliers: [],
-    listUsers: [],
     productIds: [],
     detailPurchasedProduct: {},
     errorGetData: false,
@@ -76,61 +72,6 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         }
       }
     },
-    async getListSuppliers($column = ["supplier_name", "address"]) {
-      this.errorGetData = false;
-      try {
-        const response = await apiServices.get("supplier/get-supplier/by-specifiec-column", {
-          params: {
-            customColumn: $column
-          }
-        });
-        
-        if (response.data.status_code === 200) {
-          this.listSuppliers = response.data.datas;
-          
-        }
-      } catch (error) {
-        this.errorGetData = true;
-        if (error?.response?.data?.status_code === 404) {
-          this.listSuppliers = [];
-        }
-      }
-    },
-    async getListApoteks($column = ["name_of_apotek"]) {
-      this.errorGetData = false;
-      try {
-        const response = await apiServices.get("apotek/get-apotek/by-specifiec-column", {
-          params: {
-            customColumn: $column
-          }
-        });
-        
-        if (response.data.status_code === 200) {
-          this.listApoteks = response.data.datas;
-          
-        }
-      } catch (error) {
-        this.errorGetData = true;
-        if (error?.response?.data?.status_code === 404) {
-          this.listApoteks = [];
-        }
-      }
-    },
-    async getListNameOfUser() {
-      this.errorGetData = false;
-      try {
-        const response = await apiServices.get('user/get-name-of-users')
-        
-        if (response.data.status_code === 200) {
-          this.listUsers = response.data.datas;
-        }
-      } catch (error) {
-        this.errorGetData = true
-        if (error?.response?.data?.status_code === 404) {
-          this.listUsers = [];
-        }
-      }
-    },
     async AddPurchasedProduct(datas) {
       this.errorAddedData = false
       this.productDoesntHaveDefaultStockError = false
@@ -153,9 +94,7 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         }        
       }
     },
-    async editPurchasedProduct(datas, purchaseProductId) {
-      console.log(datas, 'datas');
-      
+    async editPurchasedProduct(datas, purchaseProductId) {      
       this.errorEditData = false
       this.productDoesntHaveDefaultStockError = false
       this.errorMessage = ''
@@ -231,7 +170,7 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         tax: item.product_detail.tax,
         discount: item.product_detail.discount,
         price_after_discount: item.product_detail.price_after_discount,
-        batch_number: item.product_detail.batch_number ?? 0,
+        batch_number: item.product_detail.batch_number,
         profit_margin: item.product_detail.profit_margin,
         unit_selling_price: item.product_detail.selling_price,
         total_price: item.product_detail.sub_total,
