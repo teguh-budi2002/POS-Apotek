@@ -210,7 +210,7 @@ class PurchaseApiController extends Controller
             $purchasedProducts->purchasedProducts()->sync($combineRequestProductPurchased);
 
             DB::commit();
-            return $this->responseJson(201, "Order produk berhasil diubah");
+            return $this->responseJson(200, "Order produk berhasil diubah");
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());

@@ -26,7 +26,7 @@ export const useApotekStore = defineStore("useApotekStore", {
                         ...this.filters
                     }
                 });
-
+                
                 if (response.data.status_code === 200) {
                     this.apoteks = response.data.datas.apoteks.data;
                     this.totalRecords = response.data.datas.total;
@@ -108,6 +108,8 @@ export const useApotekStore = defineStore("useApotekStore", {
                 }
             } catch (error) {
                 this.errorAddedData = true;
+                console.log(error, "error");
+                
             }
         },
         setFilter(key, value) {

@@ -863,6 +863,7 @@ export default {
       onMounted(async () => {
         clearFilterState()
         clearSelectedProduct()
+        showToast()
 
         Promise.all([
           loadPurchasedProducts(),
@@ -896,6 +897,26 @@ export default {
       const loadUsers = async () => {
         await userStore.getListNameOfUser()
         users.value = userStore.listUsers
+      }
+
+      const showToast = () => {
+        if (purchasedProductStore.addedDataSuccessfully) {
+          toast.add({
+            severity: "success",
+            summary: "Added Data Successfully",
+            detail: "Data Pembelian Produk berhasil ditambahkan",
+            life: 3000,
+          });
+          purchasedProductStore.resetAddedDataStatus()
+        } else if (purchasedProductStore.editDataSuccessfully) {
+          toast.add({
+            severity: "success",
+            summary: "Edit Data Successfully",
+            detail: "Data Pembelian Produk berhasil diubah",
+            life: 3000,
+          });
+          purchasedProductStore.resetEditDataStatus()
+        }
       }
 
       const setFilterOption = debounce((field, value) => {

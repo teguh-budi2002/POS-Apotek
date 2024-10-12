@@ -22,6 +22,8 @@ export const useReturnPurchasedProductsStore = defineStore('useReturnPurchasedPr
     errorGetData: false,
     errorAddedData: false,
     errorUpdatedData: false,
+    addedDataSuccessfully: false,
+    editDataSuccessfully: false,
     NEXT_PAGE_URL: '',
     PREV_PAGE_URL: '',
     URL: 'return-product/get-paginate-return-product',
@@ -125,8 +127,12 @@ export const useReturnPurchasedProductsStore = defineStore('useReturnPurchasedPr
       try {
         const response = await apiServices.post("return-product/add-return-product", datas);
         
+        if (response.data.status_code === 201) {
+          this.addedDataSuccessfully = true;
+        }
       } catch (error) {
         this.errorAddedData = true;
+        this.addedDataSuccessfully = false;
       }
     },
     async editReturnedProduct(datas, return_ref_num) { 
@@ -134,17 +140,12 @@ export const useReturnPurchasedProductsStore = defineStore('useReturnPurchasedPr
       try {
         const response = await apiServices.patch(`return-product/edit-return-product/${return_ref_num}`, datas);
 
-        // if (response.data.status_code === 200) {
-        //   const editedReturnProduct = response.data.datas.editedReturnProduct;
-        //   const indexOfReturn = this.listReturnPurchasedProducts.findIndex((rp) => rp.return_reference_number === editedReturnProduct.return_reference_number);
-
-        //   if (indexOfReturn !== -1) {
-        //     this.listReturnPurchasedProducts.splice(indexOfReturn, 1, editedReturnProduct);
-        //   }
-        // }
-        
+        if (response.data.status_code === 200) {
+          this.editDataSuccessfully = true;
+        }
       } catch (error) {
         this.errorUpdatedData = true;
+        this.editDataSuccessfully = false;
       } 
     },
     setFilter(key, value) {
@@ -180,6 +181,12 @@ export const useReturnPurchasedProductsStore = defineStore('useReturnPurchasedPr
     setSelectedReturnPurchasedProduct(returnPurchasedProduct) { 
       this.detailReturnPurchasedProduct = returnPurchasedProduct;
     },
+    resetAddedDataStatus() {
+      this.addedDataSuccessfully = false
+    },
+    resetEditDataStatus() {
+      this.editDataSuccessfully = false
+    }
   },
   persist: true
 })

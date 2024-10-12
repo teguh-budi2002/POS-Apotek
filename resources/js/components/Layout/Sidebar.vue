@@ -291,7 +291,7 @@
                         :to="{ name: 'purchased-product.data-purchased' }"
                         class="block"
                     >
-                    <div class="w-full p-2 hover:bg-blue-500 group transition-colors duration-150 rounded-md" :class="[$route.name === 'purchased-product.data-purchased' ? 'bg-blue-500' : '']">
+                    <div class="w-full p-2 hover:bg-slate-700/90 group transition-colors duration-150 rounded-md" :class="[$route.name === 'purchased-product.data-purchased' ? 'bg-slate-700/90' : '']">
                         <span
                             class="text-sm whitespace-nowrap group-hover:text-gray-100"
                             :class="[$route.name === 'purchased-product.data-purchased' ? 'text-white' : 'text-gray-300']"
@@ -305,7 +305,7 @@
                         :to="{ name: 'return-purchased-product.data-return-purchased' }"
                         class="block"
                     >
-                    <div class="w-full p-2 hover:bg-blue-500 group transition-colors duration-150 rounded-md" :class="[$route.name === 'return-purchased-product.data-return-purchased' ? 'bg-blue-500' : '']">
+                    <div class="w-full p-2 hover:bg-slate-700/90 group transition-colors duration-150 rounded-md" :class="[$route.name === 'return-purchased-product.data-return-purchased' ? 'bg-slate-700/90' : '']">
                         <span
                             class="text-sm whitespace-nowrap group-hover:text-gray-100"
                             :class="[$route.name === 'return-purchased-product.data-return-purchased' ? 'text-white' : 'text-gray-300']"

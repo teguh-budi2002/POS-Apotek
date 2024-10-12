@@ -1,16 +1,11 @@
 import axios from "axios";
-import { getToken } from "../helpers/getToken";
+import Cookies from "js-cookie";
 
-async function getCSRFToken() {
+const getCSRFToken = async () => {
     try {
-        const response = await axios.get("/sanctum/csrf-cookie");
-        const csrfToken = response.data.csrf_token;
-
-        axios.defaults.headers.common["X-CSRF-TOKEN"] = csrfToken;
-
-        return csrfToken;
+        await axios.get("/sanctum/csrf-cookie");
     } catch (error) {
-        console.error(error);
+        console.error("ERROR CSRF TOKEN MISMATCH", error);
     }
 }
 
@@ -24,11 +19,16 @@ const apiServices = axios.create({
 });
 
 apiServices.interceptors.request.use(async function (config) {
-    await getCSRFToken();
-    const authToken = getToken()
+    const CSRF_COOKIE = Cookies.get('XSRF-TOKEN');
+    const REQUEST_METHOD = config.method;
+    const AUTH_TOKEN = Cookies.get("token")
+    
+    if ((REQUEST_METHOD === 'post' || REQUEST_METHOD === 'put' || REQUEST_METHOD === 'patch' || REQUEST_METHOD === 'delete') && !CSRF_COOKIE) {
+        await getCSRFToken()
+    }    
 
-    if (authToken) {
-        config.headers.Authorization = `Bearer ${authToken}`;
+    if (AUTH_TOKEN) {
+        config.headers.Authorization = `Bearer ${AUTH_TOKEN}`;
     }
     return config;
 }, function (error) {

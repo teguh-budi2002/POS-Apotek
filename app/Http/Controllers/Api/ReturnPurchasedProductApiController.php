@@ -45,7 +45,7 @@ class ReturnPurchasedProductApiController extends Controller
 
             $return_products->returnDetails()->attach($request->ref_numbers);
       
-            return $this->responseJson(200, 'Return pembelian produk berhasil ditambahkan');
+            return $this->responseJson(201, 'Return pembelian produk berhasil ditambahkan');
         } catch (\Throwable $th) {
             DB::rollBack();
             return $this->responseJson(500, $th->getMessage());

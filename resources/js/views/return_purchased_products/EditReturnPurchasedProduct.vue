@@ -464,7 +464,7 @@ export default {
       } else {
         loading.value = false
         returnPurchasedProducts.setNullListReturnPurchasedProducts()
-        router.push({name: 'return-purchased-product.data-return-purchased', params: { addedReturnPurchasedProducts: true }})
+        router.push({name: 'return-purchased-product.data-return-purchased'})
       }            
     })
     

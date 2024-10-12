@@ -505,7 +505,7 @@ export default {
 
       onMounted(async () => {
         clearFilterState()
-        clearSelectedProduct()
+        showToast()
 
         Promise.all([
           loadReturnPurchasedProducts(),
@@ -539,6 +539,28 @@ export default {
       const loadUsers = async () => {
         await userStore.getListNameOfUser()
         users.value = userStore.listUsers
+      }
+
+      const showToast = () => {
+        if (returnedPurchasedProduct.addedDataSuccessfully) {
+          toast.add({
+            severity: "success",
+            summary: "Added Data Successfully",
+            detail: "Data Pembelian Produk berhasil ditambahkan",
+            life: 3000,
+          });
+          returnedPurchasedProduct.resetAddedDataStatus()
+        }
+
+        if (returnedPurchasedProduct.editDataSuccessfully) {
+          toast.add({
+            severity: "success",
+            summary: "Edit Data Successfully",
+            detail: "Data Pembelian Produk berhasil diubah",
+            life: 3000,
+          });
+          returnedPurchasedProduct.resetEditDataStatus()
+        }
       }
 
       const setFilterOption = debounce((field, value) => {
@@ -575,11 +597,6 @@ export default {
         if (prevPageUrl) {
           await loadReturnPurchasedProducts(url);
         }
-      }
-
-      const clearSelectedProduct = () => {
-        // returnedPurchasedProduct.setNullListProductSelected()
-        // returnedPurchasedProduct.setNullProductIds()
       }
 
       const clearFilterState = () => {

@@ -12,6 +12,8 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
     errorAddedData: false,
     errorEditData: false,
     errorSavedPayment: false,
+    addedDataSuccessfully: false,
+    editDataSuccessfully: false,
     errorChangeStatusOrder: false,
     productDoesntHaveDefaultStockError: false,
     errorMessage: '',
@@ -83,9 +85,13 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
           }
         })
         
+        if (response.data.status_code === 201) {
+          this.addedDataSuccessfully = true
+        }
       } catch (error) {
         this.errorAddedData = true
-        
+        this.addedDataSuccessfully = false
+
         if (error?.response?.data?.status_code === 400) {          
           if (error.response.data.datas.hasOwnProperty('isProductDoesntHaveDefaultStock')) {
             this.productDoesntHaveDefaultStockError = true
@@ -100,9 +106,13 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
       this.errorMessage = ''
       try {
         const response = await apiServices.patch(`ordered-product/edit-purchased-product/${purchaseProductId}`, datas)
-
+        
+        if (response.data.status_code === 200) {
+          this.editDataSuccessfully = true
+        }
       } catch (error) {
-        this.errorEditData = true     
+        this.errorEditData = true
+        this.editDataSuccessfully = false
       }
     },
     async paidOrder(datas) {
@@ -210,6 +220,12 @@ export const usePurchasedProductStore = defineStore("usePurchasedProductStore", 
         start_date: "",
         end_date: "",
       }
+    },
+    resetAddedDataStatus() {
+      this.addedDataSuccessfully = false
+    },
+    resetEditDataStatus() {
+      this.editDataSuccessfully = false
     }
   },
   persist: true
